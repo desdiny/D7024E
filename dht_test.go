@@ -5,6 +5,49 @@ import (
 	"testing"
 )
 
+
+/////////////////////////////////////
+//egen inlagt
+
+type DHTNode struct{
+	id, address, port string
+	successor *DHTNode
+
+
+}
+
+func makeDHTNode(idcheck *string, address string, port string) *DHTNode{
+	n:= new (DHTNode)
+
+	if (idcheck == nil){
+		n.id = generateNodeId()
+		n.address = address
+		n.port = port
+
+	}else{
+	n.id = *idcheck
+	n.address = address
+	n.port = port
+}
+return n
+
+//return DHTNode{ checkid, address, port, nil}
+
+}
+
+func (n DHTNode) addToRing( successor *DHTNode) {
+	n.successor = successor
+	return
+}
+
+
+
+
+////////////////////////////////////
+//slut på egenediterat
+///////////////////////////////////
+
+
 // test cases can be run by calling e.g. go test -test.run TestRingSetup
 // go run test will run all tests
 
