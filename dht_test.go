@@ -5,48 +5,54 @@ import (
 	"testing"
 )
 
-
 /////////////////////////////////////
 //egen inlagt
 
-type DHTNode struct{
+type DHTNode struct {
 	id, address, port string
-	successor *DHTNode
-
-
+	successor         *DHTNode
 }
 
-func makeDHTNode(idcheck *string, address string, port string) *DHTNode{
-	n:= new (DHTNode)
+func makeDHTNode(idcheck *string, address string, port string) DHTNode {
+	n := new(DHTNode)
 
-	if (idcheck == nil){
+	if idcheck == nil {
 		n.id = generateNodeId()
 		n.address = address
 		n.port = port
 
-	}else{
-	n.id = *idcheck
-	n.address = address
-	n.port = port
-}
-return n
-
-//return DHTNode{ checkid, address, port, nil}
+	} else {
+		n.id = *idcheck
+		n.address = address
+		n.port = port
+	}
+	return *n
 
 }
 
-func (n DHTNode) addToRing( successor *DHTNode) {
-	n.successor = successor
+func (n *DHTNode) addToRing(successor DHTNode) {
+	n.successor = &successor
+	fmt.Println(n)
+	//	fmt.Println(n.successor)
+}
+
+func (n *DHTNode) printRing() {
+
+	fmt.Println(n.tostring())
+	//	n.successor.printRing
+}
+
+func (d *DHTNode) tostring() (out string) {
+	out = "DHTNode{id: " + d.id + ", address: " + d.address + ", port: " + d.port + "}"
+	if d.successor != nil {
+		out += "\n" + d.successor.tostring()
+	}
 	return
 }
-
-
-
 
 ////////////////////////////////////
 //slut på egenediterat
 ///////////////////////////////////
-
 
 // test cases can be run by calling e.g. go test -test.run TestRingSetup
 // go run test will run all tests
@@ -76,19 +82,35 @@ func TestRingSetup(t *testing.T) {
 	node8 := makeDHTNode(nil, "localhost", "1118")
 	node9 := makeDHTNode(nil, "localhost", "1119")
 
+	/*
+		node1.addToRing(node2)
+		node1.addToRing(node3)
+		node1.addToRing(node4)
+		node4.addToRing(node5)
+		node3.addToRing(node6)
+		node3.addToRing(node7)
+		node3.addToRing(node8)
+		node7.addToRing(node9)
+	*/
+
 	node1.addToRing(node2)
-	node1.addToRing(node3)
-	node1.addToRing(node4)
+	node2.addToRing(node3)
+	node3.addToRing(node4)
 	node4.addToRing(node5)
-	node3.addToRing(node6)
-	node3.addToRing(node7)
-	node3.addToRing(node8)
-	node7.addToRing(node9)
+	node5.addToRing(node6)
+	node6.addToRing(node7)
+	node7.addToRing(node8)
+	node8.addToRing(node9)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
 	fmt.Println("------------------------------------------------------------------------------------------------")
+	fmt.Println("Print Ring node 1 :")
 	node1.printRing()
+	fmt.Println("Print Ring node 2 :")
+	node2.printRing()
+	fmt.Println("Print Ring node 3 :")
+	node3.printRing()
 	fmt.Println("------------------------------------------------------------------------------------------------")
 }
 
@@ -100,7 +122,7 @@ func TestRingSetup(t *testing.T) {
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  */
-func TestLookup(t *testing.T) {
+/*func TestLookup(t *testing.T) {
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
 	node3 := makeDHTNode(nil, "localhost", "1113")
@@ -137,7 +159,7 @@ func TestLookup(t *testing.T) {
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
 }
-
+*/
 /*
  * Example of expected output.
  *
@@ -177,7 +199,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
-func TestFinger3bits(t *testing.T) {
+/*func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
 	id2 := "02"
@@ -216,6 +238,7 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("")
 	node3.testCalcFingers(3, 3)
 }
+*/
 
 /*
  * Example of expected output.
@@ -280,7 +303,7 @@ func TestFinger3bits(t *testing.T) {
  * successor    d0a43af3a433353909e09739b964e64c107e5e92
  * distance     508258282811496687056817668076520806659544776736
  */
-func TestFinger160bits(t *testing.T) {
+/*func TestFinger160bits(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -318,3 +341,4 @@ func TestFinger160bits(t *testing.T) {
 	node3.testCalcFingers(160, 160)
 	fmt.Println("")
 }
+*/
