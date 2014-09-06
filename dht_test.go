@@ -13,9 +13,9 @@ type DHTNode struct {
 	successor         *DHTNode
 }
 
-func makeDHTNode(idcheck *string, address string, port string) DHTNode {
+func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
-
+	//var n *DHTNode
 	if idcheck == nil {
 		n.id = generateNodeId()
 		n.address = address
@@ -26,17 +26,25 @@ func makeDHTNode(idcheck *string, address string, port string) DHTNode {
 		n.address = address
 		n.port = port
 	}
-	return *n
+	return n
 
 }
 
-func (n *DHTNode) addToRing(successor DHTNode) {
-	n.successor = &successor
+func (n *DHTNode) addToRing(successor *DHTNode) {
+	n.successor = successor
 	fmt.Println(n)
 	//	fmt.Println(n.successor)
 }
 
 func (n *DHTNode) printRing() {
+
+	//if n.successor != nil {
+	//		fmt.Println("DHTNODE")
+	//		fmt.Println(n)
+	//		n.successor.printRing()
+	//	} else {
+	//		return
+	//	}
 
 	fmt.Println(n.tostring())
 	//	n.successor.printRing
@@ -45,8 +53,17 @@ func (n *DHTNode) printRing() {
 func (d *DHTNode) tostring() (out string) {
 	out = "DHTNode{id: " + d.id + ", address: " + d.address + ", port: " + d.port + "}"
 	if d.successor != nil {
-		out += "\n" + d.successor.tostring()
+		out += "\n" + (d.successor).tostring()
 	}
+	//	bu := d.successor
+	//	fmt.Printf("%v", bu)
+
+	//	if d.successor == nil {
+	//		fmt.Println("Nu har visst noden värderna: ")
+	//		fmt.Println(d)
+	//	} else {
+	//		out += "\n" + (d.successor).tostring()
+	//	}
 	return
 }
 
@@ -104,6 +121,7 @@ func TestRingSetup(t *testing.T) {
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
+	//fmt.Println(node2.successor)
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("Print Ring node 1 :")
 	node1.printRing()
