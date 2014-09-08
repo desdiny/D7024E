@@ -14,6 +14,12 @@ type DHTNode struct {
 	fingertable       []Finger
 }
 
+// Latest test
+type Finger struct {
+	startID string
+	node    *DHTNode
+}
+
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
 	//var n *DHTNode
@@ -34,6 +40,14 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 func (n *DHTNode) addToRing(successor *DHTNode) {
 	n.successor = successor
 	fmt.Println(n)
+	m:=len([byte(n.id)])
+	for i := 1; i < m; i++ {
+		n.fingertable[k].startID = n.id
+		n.fingertable[k].node = n
+		
+	} else {
+
+	}
 	//	fmt.Println(n.successor)
 }
 
