@@ -11,6 +11,7 @@ import (
 type DHTNode struct {
 	id, address, port string
 	successor         *DHTNode
+	fingertable       []Finger
 }
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
@@ -118,6 +119,7 @@ func TestRingSetup(t *testing.T) {
 	node6.addToRing(node7)
 	node7.addToRing(node8)
 	node8.addToRing(node9)
+	//node9.addToRing(node1)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
