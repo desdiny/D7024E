@@ -10,7 +10,7 @@ import (
 
 type DHTNode struct {
 	id, address, port string
-	successor         []*DHTNode
+	successor         *DHTNode
 }
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
@@ -30,29 +30,31 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 }
 
 func (n *DHTNode) addToRing(successor *DHTNode) {
-	n.successor = append(n.successor, successor)
+	n.successor = successor
+	//n.successor = append(n.successor, successor)
 	fmt.Println(n)
 }
 
 func (n *DHTNode) printRing() {
 
-	for _, i := range n.successor {
-		fmt.Println(i.tostring())
-		if i.successor == n {
-			return
-		}
+	//for _, i := range n.successor {
 
-	}
+	//fmt.Println(i.tostring())
+	//	if i.successor == n {
+	//		return
+	//	}
+
+	//	}
 	// while it.successor != n:
 	//     print it'
 
-	//if n.successor != nil {
-	//		fmt.Println("DHTNODE")
-	//		fmt.Println(n)
-	//		n.successor.printRing()
-	//	} else {
-	//		return
-	//	}
+	if n.successor != nil {
+		fmt.Println("DHTNODE")
+		fmt.Println(n)
+		n.successor.printRing()
+	} else {
+		return
+	}
 
 	//	fmt.Println(n.tostring())
 	//	n.successor.printRing
@@ -136,7 +138,7 @@ func TestRingSetup(t *testing.T) {
 	node6.addToRing(node7)
 	node7.addToRing(node8)
 	node8.addToRing(node9)
-	node9.addToRing(node1)
+	//node9.addToRing(node1)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
@@ -155,7 +157,7 @@ func TestRingSetup(t *testing.T) {
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  */
-func TestLookup(t *testing.T) {
+/*func TestLookup(t *testing.T) {
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
 	node3 := makeDHTNode(nil, "localhost", "1113")
@@ -192,6 +194,7 @@ func TestLookup(t *testing.T) {
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
 }
+*/
 
 /*
  * Example of expected output.
