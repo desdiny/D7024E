@@ -8,6 +8,7 @@ import (
 /////////////////////////////////////
 //egen inlagt
 antalfingrar := 3
+
 type DHTNode struct {
 	id, address, port string
 	successor         *DHTNode
@@ -28,6 +29,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.address = address
 		n.port = port
 		n.successor = n
+		n.finger = make([]*DHTNode, antalfingar)
 	}
 	return n
 
