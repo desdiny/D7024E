@@ -2,6 +2,8 @@ package dht
 
 import (
 	"fmt"
+	"math"
+	"math/big"
 	"testing"
 )
 
@@ -10,9 +12,9 @@ import (
 //var antalfingrar int = 3
 
 type DHTNode struct {
-	id, address, port string
-	successor         *DHTNode
-	finger            []*DHTNode
+	id, address, port      string
+	successor, predecessor *DHTNode
+	finger                 []*DHTNode
 }
 
 //var antalfingrar int = 3
@@ -24,6 +26,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.address = address
 		n.port = port
 		n.successor = n
+		n.predecessor = n
 		n.finger = make([]*DHTNode, 3)
 
 	} else {
@@ -31,6 +34,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.address = address
 		n.port = port
 		n.successor = n
+		n.predecessor = n
 		n.finger = make([]*DHTNode, 3)
 	}
 	return n
@@ -46,6 +50,8 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 	oldnode := node.successor
 	node.successor = newnode
 	newnode.successor = oldnode
+	newnode.predecessor = node
+	oldnode.predecessor = newnode
 
 	fmt.Println(n)
 }
@@ -73,6 +79,38 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 		return d
 	}
 	return d.successor.lookup(hash)
+}
+
+//om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
+func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
+	if s.successor == n.finger[i-1] {
+		n.finger[i-1] = s
+		p := n.predecessor
+		if p != n {
+			p.update_finger_table(s, i)
+		}
+
+	}
+
+}
+
+//update all nodes whose finger should refer to n
+func (n *DHTNode) update_others() {
+	for i := 1; i <= len(n.finger); i++ {
+		big_n := big.Int{}
+		sub_big_int := big.Int{}
+
+		big_n.SetString(n, 16)
+		sub_big_int.SetInt64(int64(math.Exp2(float64(i - 1))))
+
+		big_n.Sub(big_n, sub_big_int)
+		bigString := big_n.String()
+
+		p = n.lookup(bigString)
+		p.update_finger_table(n, i)
+
+	}
+
 }
 
 ////////////////////////////////////
