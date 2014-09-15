@@ -7,13 +7,15 @@ import (
 
 /////////////////////////////////////
 //egen inlagt
-antalfingrar := 3
+//var antalfingrar int = 3
 
 type DHTNode struct {
 	id, address, port string
 	successor         *DHTNode
-	finger            [] *DHTNode
+	finger            []*DHTNode
 }
+
+//var antalfingrar int = 3
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
@@ -22,45 +24,33 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.address = address
 		n.port = port
 		n.successor = n
-		n.finger = make([]*DHTNode, antalfingar)
+		n.finger = make([]*DHTNode, 3)
 
 	} else {
 		n.id = *idcheck
 		n.address = address
 		n.port = port
 		n.successor = n
-		n.finger = make([]*DHTNode, antalfingar)
+		n.finger = make([]*DHTNode, 3)
 	}
 	return n
 
 }
 
 func (n *DHTNode) addToRing(newnode *DHTNode) {
-
+	for i := 0; i < len(n.finger); i++ {
+		fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
+		n.finger[i] = n.lookup(fingerID)
+	}
 	node := n.lookup(newnode.id)
 	oldnode := node.successor
 	node.successor = newnode
 	newnode.successor = oldnode
-	//if successor is between n and n.successor
 
-	//else
-	//	n.successor = successor
-	//n.successor = append(n.successor, successor)
 	fmt.Println(n)
 }
 
 func (n *DHTNode) printRing() {
-
-	//for _, i := range n.successor {
-
-	//fmt.Println(i.tostring())
-	//	if i.successor == n {
-	//		return
-	//	}
-
-	//	}
-	// while it.successor != n:
-	//     print it'
 
 	nextNode := n.successor
 	fmt.Println(n.id)
@@ -69,22 +59,11 @@ func (n *DHTNode) printRing() {
 		nextNode = nextNode.successor
 
 	}
-
-	//	fmt.Println(n.tostring())
-	//	n.successor.printRing
 }
 
 func (d *DHTNode) tostring() (out string) {
 	out = "DHTNode{id: " + d.id + ", address: " + d.address + ", port: " + d.port + "}"
-	//	bu := d.successor
-	//	fmt.Printf("%v", bu)
 
-	//	if d.successor == nil {
-	//		fmt.Println("Nu har visst noden värderna: ")
-	//		fmt.Println(d)
-	//	} else {
-	//		out += "\n" + (d.successor).tostring()
-	//	}
 	return
 }
 
@@ -103,19 +82,6 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 // test cases can be run by calling e.g. go test -test.run TestRingSetup
 // go run test will run all tests
 
-/*
- * Example of expected output of calling printRing().
- *
- * f38f3b2dcc69a2093f258e31902e40ad33148385 1390478919082870357587897783216576852537917080453
- * 10dc86630d9277a20e5f6176ff0786f66e781d97 96261723029167816257529941937491552490862681495
- * 35f2749bbe6fd0221a97ecf0df648bc8355c7a0e 307983449213776748112297858267528664243962149390
- * 3cb3aaec484f62c04dbab1512409b51887b28272 346546169131330955640073427806530491225644106354
- * 624778a652b23ebeb2ce133277ee8812fff87992 561074958520938864836545731942448707916353010066
- * a5a5dcfbd8c15e495242c4d7fe680fe986562ce2 945682350545587431465494866472073397640858316002
- * b94a0c51288cdaaa00cd5609faa2189f56251984 1057814620711304956240501530938795222302424635780
- * d8b6ac320d92fe71551bed2f702ba6ef2907283e 1237215742469423719453176640534983456657032816702
- * ee33f5aaf7cf6a7168a0f3a4449c19c9b4d1e399 1359898542148650805696846077009990511357036979097
- */
 /*
 func TestRingSetup(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
