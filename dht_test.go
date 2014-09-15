@@ -10,19 +10,11 @@ import (
 
 type DHTNode struct {
 	id, address, port string
-	successor         *DHTNode
-	fingertable       []Finger
-}
-
-// Latest test
-type Finger struct {
-	startID string
-	node    *DHTNode
+	successor         []*DHTNode
 }
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
-	//var n *DHTNode
 	if idcheck == nil {
 		n.id = generateNodeId()
 		n.address = address
@@ -38,20 +30,21 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 }
 
 func (n *DHTNode) addToRing(successor *DHTNode) {
-	n.successor = successor
+	n.successor = append(n.successor, successor)
 	fmt.Println(n)
-	m:=len([byte(n.id)])
-	for i := 1; i < m; i++ {
-		n.fingertable[k].startID = n.id
-		n.fingertable[k].node = n
-		
-	} else {
-
-	}
-	//	fmt.Println(n.successor)
 }
 
 func (n *DHTNode) printRing() {
+
+	for _, i := range n.successor {
+		fmt.Println(i.tostring())
+		if i.successor == n {
+			return
+		}
+
+	}
+	// while it.successor != n:
+	//     print it'
 
 	//if n.successor != nil {
 	//		fmt.Println("DHTNODE")
@@ -61,15 +54,12 @@ func (n *DHTNode) printRing() {
 	//		return
 	//	}
 
-	fmt.Println(n.tostring())
+	//	fmt.Println(n.tostring())
 	//	n.successor.printRing
 }
 
 func (d *DHTNode) tostring() (out string) {
 	out = "DHTNode{id: " + d.id + ", address: " + d.address + ", port: " + d.port + "}"
-	if d.successor != nil {
-		out += "\n" + (d.successor).tostring()
-	}
 	//	bu := d.successor
 	//	fmt.Printf("%v", bu)
 
@@ -79,6 +69,19 @@ func (d *DHTNode) tostring() (out string) {
 	//	} else {
 	//		out += "\n" + (d.successor).tostring()
 	//	}
+	return
+}
+
+func (d *DHTNode) lookup(hash string) {
+	for i := d; ; i = i.successor {
+		if i.id == hash {
+			fmt.Println(i.tostring())
+			break
+		}
+		if i.successor == d {
+			break
+		}
+	}
 	return
 }
 
@@ -133,18 +136,14 @@ func TestRingSetup(t *testing.T) {
 	node6.addToRing(node7)
 	node7.addToRing(node8)
 	node8.addToRing(node9)
-	//node9.addToRing(node1)
+	node9.addToRing(node1)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
 	//fmt.Println(node2.successor)
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("Print Ring node 1 :")
-	node1.printRing()
-	fmt.Println("Print Ring node 2 :")
 	node2.printRing()
-	fmt.Println("Print Ring node 3 :")
-	node3.printRing()
 	fmt.Println("------------------------------------------------------------------------------------------------")
 }
 
@@ -156,7 +155,7 @@ func TestRingSetup(t *testing.T) {
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  */
-/*func TestLookup(t *testing.T) {
+func TestLookup(t *testing.T) {
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
 	node3 := makeDHTNode(nil, "localhost", "1113")
@@ -184,16 +183,16 @@ func TestRingSetup(t *testing.T) {
 
 	str := "hello students!"
 	hashKey := sha1hash(str)
-	fmt.Println("str=" + str)
-	fmt.Println("hashKey=" + hashKey)
+	fmt.Println("str= " + str)
+	fmt.Println("hashKey= " + hashKey)
 
-	fmt.Println("node 1: " + node1.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
-	fmt.Println("node 5: " + node5.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
+	//fmt.Println("node 1: " + node1.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
+	//fmt.Println("node 5: " + node5.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
 }
-*/
+
 /*
  * Example of expected output.
  *
