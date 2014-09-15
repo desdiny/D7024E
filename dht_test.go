@@ -7,10 +7,11 @@ import (
 
 /////////////////////////////////////
 //egen inlagt
-
+antalfingrar := 3
 type DHTNode struct {
 	id, address, port string
 	successor         *DHTNode
+	finger            [] *DHTNode
 }
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
@@ -19,18 +20,29 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.id = generateNodeId()
 		n.address = address
 		n.port = port
+		n.successor = n
+		n.finger = make([]*DHTNode, antalfingar)
 
 	} else {
 		n.id = *idcheck
 		n.address = address
 		n.port = port
+		n.successor = n
 	}
 	return n
 
 }
 
-func (n *DHTNode) addToRing(successor *DHTNode) {
-	n.successor = successor
+func (n *DHTNode) addToRing(newnode *DHTNode) {
+
+	node := n.lookup(newnode.id)
+	oldnode := node.successor
+	node.successor = newnode
+	newnode.successor = oldnode
+	//if successor is between n and n.successor
+
+	//else
+	//	n.successor = successor
 	//n.successor = append(n.successor, successor)
 	fmt.Println(n)
 }
@@ -48,12 +60,12 @@ func (n *DHTNode) printRing() {
 	// while it.successor != n:
 	//     print it'
 
-	if n.successor != nil {
-		fmt.Println("DHTNODE")
-		fmt.Println(n)
-		n.successor.printRing()
-	} else {
-		return
+	nextNode := n.successor
+	fmt.Println(n.id)
+	for nextNode != n {
+		fmt.Println(nextNode.id)
+		nextNode = nextNode.successor
+
 	}
 
 	//	fmt.Println(n.tostring())
@@ -74,17 +86,12 @@ func (d *DHTNode) tostring() (out string) {
 	return
 }
 
-func (d *DHTNode) lookup(hash string) {
-	for i := d; ; i = i.successor {
-		if i.id == hash {
-			fmt.Println(i.tostring())
-			break
-		}
-		if i.successor == d {
-			break
-		}
+func (d *DHTNode) lookup(hash string) *DHTNode {
+
+	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
+		return d
 	}
-	return
+	return d.successor.lookup(hash)
 }
 
 ////////////////////////////////////
@@ -107,6 +114,7 @@ func (d *DHTNode) lookup(hash string) {
  * d8b6ac320d92fe71551bed2f702ba6ef2907283e 1237215742469423719453176640534983456657032816702
  * ee33f5aaf7cf6a7168a0f3a4449c19c9b4d1e399 1359898542148650805696846077009990511357036979097
  */
+/*
 func TestRingSetup(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
@@ -118,18 +126,18 @@ func TestRingSetup(t *testing.T) {
 	node7 := makeDHTNode(nil, "localhost", "1117")
 	node8 := makeDHTNode(nil, "localhost", "1118")
 	node9 := makeDHTNode(nil, "localhost", "1119")
-
-	/*
-		node1.addToRing(node2)
-		node1.addToRing(node3)
-		node1.addToRing(node4)
-		node4.addToRing(node5)
-		node3.addToRing(node6)
-		node3.addToRing(node7)
-		node3.addToRing(node8)
-		node7.addToRing(node9)
-	*/
-
+*/
+/*
+	node1.addToRing(node2)
+	node1.addToRing(node3)
+	node1.addToRing(node4)
+	node4.addToRing(node5)
+	node3.addToRing(node6)
+	node3.addToRing(node7)
+	node3.addToRing(node8)
+	node7.addToRing(node9)
+*/
+/*
 	node1.addToRing(node2)
 	node2.addToRing(node3)
 	node3.addToRing(node4)
@@ -148,7 +156,7 @@ func TestRingSetup(t *testing.T) {
 	node2.printRing()
 	fmt.Println("------------------------------------------------------------------------------------------------")
 }
-
+*/
 /*
  * Example of expected output.
  *
@@ -157,7 +165,7 @@ func TestRingSetup(t *testing.T) {
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  */
-/*func TestLookup(t *testing.T) {
+func TestLookup(t *testing.T) {
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
 	node3 := makeDHTNode(nil, "localhost", "1113")
@@ -188,13 +196,12 @@ func TestRingSetup(t *testing.T) {
 	fmt.Println("str= " + str)
 	fmt.Println("hashKey= " + hashKey)
 
-	//fmt.Println("node 1: " + node1.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
-	//fmt.Println("node 5: " + node5.lookup(hashKey).nodeId + " is respoinsible for " + hashKey)
+	fmt.Println("node 1: " + node1.lookup(hashKey).id + " is respoinsible for " + hashKey)
+	fmt.Println("node 5: " + node5.lookup(hashKey).id + " is respoinsible for " + hashKey)
 
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
 }
-*/
 
 /*
  * Example of expected output.
