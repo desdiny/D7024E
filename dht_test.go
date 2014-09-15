@@ -99,14 +99,17 @@ func (n *DHTNode) update_others() {
 	for i := 1; i <= len(n.finger); i++ {
 		big_n := big.Int{}
 		sub_big_int := big.Int{}
+		result := big.Int{}
 
-		big_n.SetString(n, 16)
+		big_n.SetString(n.id, 16)
 		sub_big_int.SetInt64(int64(math.Exp2(float64(i - 1))))
 
-		big_n.Sub(big_n, sub_big_int)
-		bigString := big_n.String()
+		//big_n.Sub(big_n, sub_big_int)
+		//bigString := big_n.String()
+		result.Sub(&big_n, &sub_big_int)
+		bigString := result.String()
 
-		p = n.lookup(bigString)
+		p := n.lookup(bigString)
 		p.update_finger_table(n, i)
 
 	}
@@ -199,8 +202,8 @@ func TestLookup(t *testing.T) {
 
 	str := "hello students!"
 	hashKey := sha1hash(str)
-	fmt.Println("str= " + str)
-	fmt.Println("hashKey= " + hashKey)
+	fmt.Println("str = " + str)
+	fmt.Println("hashKey = " + hashKey)
 
 	fmt.Println("node 1: " + node1.lookup(hashKey).id + " is respoinsible for " + hashKey)
 	fmt.Println("node 5: " + node5.lookup(hashKey).id + " is respoinsible for " + hashKey)
