@@ -27,7 +27,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*DHTNode, 3)
+		n.finger = make([]*DHTNode, 160) //change to use for 3 and 160
 
 	} else {
 		n.id = *idcheck
@@ -35,7 +35,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*DHTNode, 3)
+		n.finger = make([]*DHTNode, 160) //change to use for 3 and 160
 	}
 	return n
 
@@ -259,6 +259,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
+/*
 func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
@@ -298,6 +299,7 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("")
 	node3.testCalcFingers(3, 3)
 }
+*/
 
 /*
  * Example of expected output.
@@ -362,7 +364,7 @@ func TestFinger3bits(t *testing.T) {
  * successor    d0a43af3a433353909e09739b964e64c107e5e92
  * distance     508258282811496687056817668076520806659544776736
  */
-/*func TestFinger160bits(t *testing.T) {
+func TestFinger160bits(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -400,4 +402,3 @@ func TestFinger3bits(t *testing.T) {
 	node3.testCalcFingers(160, 160)
 	fmt.Println("")
 }
-*/
