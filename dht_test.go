@@ -115,6 +115,13 @@ func (n *DHTNode) update_others() {
 	}
 
 }
+func (n *DHTNode) testCalcFingers(k int, m int) {
+	bigN := big.Int{}
+	bigN.SetString(n.id, 16)
+
+	fmt.Println(calcFinger(bigN.Bytes(), k, m))
+
+}
 
 ////////////////////////////////////
 //slut på egenediterat
@@ -174,6 +181,7 @@ func TestRingSetup(t *testing.T) {
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  * c588f83243aeb49288d3fcdeb6cc9e68f9134dce is respoinsible for cba8c6e5f208b9c72ebee924d20f04a081a1b0aa
  */
+/*
 func TestLookup(t *testing.T) {
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -211,7 +219,7 @@ func TestLookup(t *testing.T) {
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
 }
-
+*/
 /*
  * Example of expected output.
  *
@@ -251,7 +259,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
-/*func TestFinger3bits(t *testing.T) {
+func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
 	id2 := "02"
@@ -290,7 +298,6 @@ func TestLookup(t *testing.T) {
 	fmt.Println("")
 	node3.testCalcFingers(3, 3)
 }
-*/
 
 /*
  * Example of expected output.
