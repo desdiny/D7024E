@@ -14,10 +14,20 @@ import (
 type DHTNode struct {
 	id, address, port      string
 	successor, predecessor *DHTNode
-	finger                 []*DHTNode
+	finger                 []*Fingers //links to Fingers struct
 }
 
-//var antalfingrar int = 3
+//added Fingers struct.. we say that every DHTNODE have finger witch is
+// populated by fingers (ie. a start string and a pointer to a DHTNODE)
+//so a DHTNode will now look like this:
+//
+//		id:00 address:nill port:nill
+//		successor:01 predecessor:09
+//		finger [start,node],[start,node],[start,node]
+type Fingers struct {
+	start string
+	node  *DHTNode
+}
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
@@ -27,7 +37,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*DHTNode, 160) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
 
 	} else {
 		n.id = *idcheck
@@ -35,16 +45,25 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*DHTNode, 160) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
 	}
 	return n
 
 }
 
 func (n *DHTNode) addToRing(newnode *DHTNode) {
+
+	if n.finger[0] == nil {
+		for i := 0; i < len(n.finger); i++ {
+			fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
+			n.finger[i] = &Fingers{fingerID, n.lookup(fingerID)}
+		}
+
+	}
 	for i := 0; i < len(n.finger); i++ {
-		fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
-		n.finger[i] = n.lookup(fingerID)
+		fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
+		newnode.finger[i] = &Fingers{fingerID, n.lookup(fingerID)}
+
 	}
 	node := n.lookup(newnode.id)
 	oldnode := node.successor
@@ -52,16 +71,17 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 	newnode.successor = oldnode
 	newnode.predecessor = node
 	oldnode.predecessor = newnode
+	n.update_others()
 
-	fmt.Println(n)
 }
 
 func (n *DHTNode) printRing() {
 
 	nextNode := n.successor
-	fmt.Println(n.id)
+	fmt.Println("id: ", n.id, "fingers: ", n.finger)
 	for nextNode != n {
-		fmt.Println(nextNode.id)
+		fmt.Println("id: ", nextNode.id, "fingers: ", nextNode.finger)
+		//fmt.Println(nextNode.id)
 		nextNode = nextNode.successor
 
 	}
@@ -83,8 +103,8 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 
 //om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
 func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
-	if s.successor == n.finger[i-1] {
-		n.finger[i-1] = s
+	if s.successor == n.finger[i-1].node {
+		n.finger[i-1].node = s
 		p := n.predecessor
 		if p != n {
 			p.update_finger_table(s, i)
@@ -259,7 +279,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
-/*
+
 func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
@@ -290,16 +310,15 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("------------------------------------------------------------------------------------------------")
 	fmt.Println("RING STRUCTURE")
 	fmt.Println("------------------------------------------------------------------------------------------------")
-	node1.printRing()
+	node0.printRing()
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
-	node3.testCalcFingers(1, 3)
+	node0.testCalcFingers(1, 3)
 	fmt.Println("")
-	node3.testCalcFingers(2, 3)
+	node0.testCalcFingers(2, 3)
 	fmt.Println("")
-	node3.testCalcFingers(3, 3)
+	node0.testCalcFingers(3, 3)
 }
-*/
 
 /*
  * Example of expected output.
@@ -364,7 +383,7 @@ func TestFinger3bits(t *testing.T) {
  * successor    d0a43af3a433353909e09739b964e64c107e5e92
  * distance     508258282811496687056817668076520806659544776736
  */
-func TestFinger160bits(t *testing.T) {
+/*func TestFinger160bits(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -401,4 +420,4 @@ func TestFinger160bits(t *testing.T) {
 	fmt.Println("")
 	node3.testCalcFingers(160, 160)
 	fmt.Println("")
-}
+}*/
