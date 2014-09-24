@@ -52,19 +52,33 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 }
 
 func (n *DHTNode) addToRing(newnode *DHTNode) {
-
+	fmt.Println("Nodens id: ", newnode.id)
 	if n.finger[0] == nil {
-		for i := 0; i < len(n.finger); i++ {
+		for i := 1; i <= len(n.finger); i++ {
 			fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
-			n.finger[i] = &Fingers{fingerID, n.lookup(fingerID)}
+			tempnode := n.lookup(fingerID)
+			if tempnode.id != fingerID {
+				tempnode = tempnode.successor
+
+			}
+			n.finger[i-1] = &Fingers{fingerID, tempnode}
+
+			fmt.Println(n.finger[i-1].node.id)
 		}
 
 	}
-	for i := 0; i < len(n.finger); i++ {
+	for i := 1; i <= len(n.finger); i++ {
 		fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
-		newnode.finger[i] = &Fingers{fingerID, n.lookup(fingerID)}
+		tempnode := n.lookup(fingerID)
+		if tempnode.id != fingerID {
+			tempnode = tempnode.successor
+
+		}
+		newnode.finger[i-1] = &Fingers{fingerID, tempnode}
+		fmt.Println(newnode.finger[i-1].node.id)
 
 	}
+
 	node := n.lookup(newnode.id)
 	oldnode := node.successor
 	node.successor = newnode
@@ -80,7 +94,13 @@ func (n *DHTNode) printRing() {
 	nextNode := n.successor
 	fmt.Println("id: ", n.id, "fingers: ", n.finger)
 	for nextNode != n {
-		fmt.Println("id: ", nextNode.id, "fingers: ", nextNode.finger)
+		fmt.Printf("id: %s fingers: ", nextNode.id)
+		for i := 0; i < len(nextNode.finger); i++ {
+			fmt.Printf("%s ", nextNode.finger[i].node.id)
+
+		}
+		fmt.Println()
+
 		//fmt.Println(nextNode.id)
 		nextNode = nextNode.successor
 
@@ -127,10 +147,37 @@ func (n *DHTNode) update_others() {
 		//big_n.Sub(big_n, sub_big_int)
 		//bigString := big_n.String()
 		result.Sub(&big_n, &sub_big_int)
-		bigString := result.String()
+		if result.Sign() < 0 {
+			fmt.Println("fixar negativa tal")
+			//will be used for 2^(nodes to be used)
+			big_totalnodes := big.Int{}
+			//the amount of nodes to be used
+			//big_nodes := big.Int{}
+			//used to do the calculation for sub
+			big_negative := result
 
+			//sets the nodes variable to a big int from the size of n.fingers
+			test := len(n.finger)
+			test2 := int64(math.Exp2(float64(test)))
+			big_totalnodes.SetInt64(test2)
+			//
+
+			fmt.Println("totalt antal noder: ", big_totalnodes)
+			//calculate result
+			fmt.Println("big_negative: ", big_negative)
+			result.Sub(&big_totalnodes, &big_negative)
+
+			fmt.Println("här kommer det färdiga talet!: ")
+			/////HÄR MÅSTE DET CHECKAS SÅ ATT VI INTE TAR -2 när det ska vara node 7 t.ex
+		}
+		bigString := result.String()
+		fmt.Println(bigString)
+		fmt.Println()
+		fmt.Println()
 		p := n.lookup(bigString)
+		//if p != n {
 		p.update_finger_table(n, i)
+		//	}
 
 	}
 
@@ -313,11 +360,11 @@ func TestFinger3bits(t *testing.T) {
 	node0.printRing()
 	fmt.Println("------------------------------------------------------------------------------------------------")
 
-	node0.testCalcFingers(1, 3)
+	//	node0.testCalcFingers(1, 3)
 	fmt.Println("")
-	node0.testCalcFingers(2, 3)
+	//	node0.testCalcFingers(2, 3)
 	fmt.Println("")
-	node0.testCalcFingers(3, 3)
+	//	node0.testCalcFingers(3, 3)
 }
 
 /*
