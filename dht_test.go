@@ -2,8 +2,8 @@ package dht
 
 import (
 	"fmt"
-	"math"
 	"math/big"
+	"strings"
 	"testing"
 )
 
@@ -37,7 +37,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 160) //change to use for 3 and 160
 
 	} else {
 		n.id = *idcheck
@@ -45,7 +45,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 160) //change to use for 3 and 160
 	}
 	return n
 
@@ -56,6 +56,9 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 	if n.finger[0] == nil {
 		for i := 1; i <= len(n.finger); i++ {
 			fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
+			if len(fingerID) < len(n.id) {
+				fingerID = strings.Repeat("0", len(n.id)-len(fingerID)) + fingerID
+			}
 			tempnode := n.lookup(fingerID)
 			if tempnode.id != fingerID {
 				tempnode = tempnode.successor
@@ -69,6 +72,9 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 	}
 	for i := 1; i <= len(n.finger); i++ {
 		fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
+		if len(fingerID) < len(n.id) {
+			fingerID = strings.Repeat("0", len(n.id)-len(fingerID)) + fingerID
+		}
 		tempnode := n.lookup(fingerID)
 		if tempnode.id != fingerID {
 			tempnode = tempnode.successor
@@ -85,7 +91,7 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 	newnode.successor = oldnode
 	newnode.predecessor = node
 	oldnode.predecessor = newnode
-	n.update_others()
+	newnode.update_others()
 
 }
 
@@ -118,11 +124,40 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
 		return d
 	}
-	return d.successor.lookup(hash)
+
+	dist := distance(d.id, hash, len(d.finger))
+	index := dist.BitLen() - 1
+	if index < 0 {
+		return d
+	}
+	fmt.Println("INDEX", index)
+
+	//stegar ner tills fingret inte pekar på sig själv
+	for ; index > 0 && d.finger[index].node == d; index-- {
+
+	}
+	// Kollar så vi inte hamnar för långt
+	diff := big.Int{}
+	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+	for index > 0 && diff.Sign() < 0 {
+		index--
+		diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+	}
+	//kollar så vi inte pekar på oss själva
+	if d.finger[index].node == d || diff.Sign() < 0 {
+		fmt.Println("ERROR ERROR alles gebort auf the baut")
+		return d.successor.lookup(hash)
+
+	}
+
+	return d.finger[index].node.lookup(hash)
+
+	//	return d.successor.lookup(hash)
 }
 
 //om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
 func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
+	fmt.Println("updating finger", i, "on", n.id)
 	if s.successor == n.finger[i-1].node {
 		n.finger[i-1].node = s
 		p := n.predecessor
@@ -142,7 +177,7 @@ func (n *DHTNode) update_others() {
 		result := big.Int{}
 
 		big_n.SetString(n.id, 16)
-		sub_big_int.SetInt64(int64(math.Exp2(float64(i - 1))))
+		sub_big_int.Exp(big.NewInt(2), big.NewInt(int64(i-1)), nil)
 
 		//big_n.Sub(big_n, sub_big_int)
 		//bigString := big_n.String()
@@ -157,27 +192,26 @@ func (n *DHTNode) update_others() {
 			big_negative := result
 
 			//sets the nodes variable to a big int from the size of n.fingers
-			test := len(n.finger)
-			test2 := int64(math.Exp2(float64(test)))
-			big_totalnodes.SetInt64(test2)
+
+			big_totalnodes.Exp(big.NewInt(2), big.NewInt(int64(len(n.finger))), nil)
 			//
 
 			fmt.Println("totalt antal noder: ", big_totalnodes)
 			//calculate result
 			fmt.Println("big_negative: ", big_negative)
-			result.Sub(&big_totalnodes, &big_negative)
+			result.Add(&big_totalnodes, &big_negative)
 
 			fmt.Println("här kommer det färdiga talet!: ")
 			/////HÄR MÅSTE DET CHECKAS SÅ ATT VI INTE TAR -2 när det ska vara node 7 t.ex
 		}
-		bigString := result.String()
+		bigString := fmt.Sprintf("%x", result.Bytes())
 		fmt.Println(bigString)
 		fmt.Println()
 		fmt.Println()
 		p := n.lookup(bigString)
-		//if p != n {
-		p.update_finger_table(n, i)
-		//	}
+		if p != n {
+			p.update_finger_table(n, i)
+		}
 
 	}
 
@@ -326,7 +360,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
-
+/*
 func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
@@ -366,7 +400,7 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("")
 	//	node0.testCalcFingers(3, 3)
 }
-
+*/
 /*
  * Example of expected output.
  *
@@ -430,7 +464,7 @@ func TestFinger3bits(t *testing.T) {
  * successor    d0a43af3a433353909e09739b964e64c107e5e92
  * distance     508258282811496687056817668076520806659544776736
  */
-/*func TestFinger160bits(t *testing.T) {
+func TestFinger160bits(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -467,4 +501,4 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("")
 	node3.testCalcFingers(160, 160)
 	fmt.Println("")
-}*/
+}

@@ -8,13 +8,13 @@ import (
 	"math/big"
 )
 
-func distance(a, b []byte, bits int) *big.Int {
+func distance(a, b string, bits int) *big.Int {
 	var ring big.Int
 	ring.Exp(big.NewInt(2), big.NewInt(int64(bits)), nil)
 
 	var a_int, b_int big.Int
-	(&a_int).SetBytes(a)
-	(&b_int).SetBytes(b)
+	(&a_int).SetString(a, 16)
+	(&b_int).SetString(b, 16)
 
 	var dist big.Int
 	(&dist).Sub(&b_int, &a_int)
