@@ -1,6 +1,6 @@
 /*
 fixa för nätverk:
-	addtoring
+	addtoring // micke
 	lookup
 	update_others
 	kanske (updadte_fingertable)
@@ -8,7 +8,7 @@ fixa för nätverk:
 kolla vad som behövs i msg samt transport structen
 
 
-uppdatera fingrar automagist .... läs i handout filen
+uppdatera fingrar automagist .... läs i handout filen // trolle
 
 
 */
