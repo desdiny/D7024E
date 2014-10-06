@@ -1,3 +1,18 @@
+/*
+fixa för nätverk:
+	addtoring
+	lookup
+	update_others
+	kanske (updadte_fingertable)
+
+kolla vad som behövs i msg samt transport structen
+
+
+uppdatera fingrar automagist .... läs i handout filen
+
+
+*/
+
 package dht
 
 import (
@@ -15,7 +30,7 @@ import (
 
 //###################################//
 //									//
-// DHT NODER OCH DESS FUNKTIONER   //
+// Nätverk och dess funktioner	   //
 //								  //
 //###############################//
 //
@@ -27,6 +42,7 @@ type Msg struct {
 
 //struct for Transport from lab handout
 type Transport struct {
+	node        *DHTNode
 	bindAddress string
 }
 
@@ -104,6 +120,7 @@ func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 func (n *DHTNode) addToRing(newnode *DHTNode) {
 	fmt.Println("Nodens id: ", newnode.id)
 	if n.finger[0] == nil {
+		// fixar fingrar special första gången
 		for i := 1; i <= len(n.finger); i++ {
 			fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
 			if len(fingerID) < len(n.id) {
@@ -121,6 +138,7 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 		}
 
 	}
+	// fixar fingrar
 	for i := 1; i <= len(n.finger); i++ {
 		fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
 		if len(fingerID) < len(n.id) {
