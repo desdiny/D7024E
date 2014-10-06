@@ -1,8 +1,10 @@
 package dht
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
+	"net"
 	"strings"
 	"testing"
 )
@@ -11,6 +13,52 @@ import (
 //egen inlagt
 //var antalfingrar int = 3
 
+//###################################//
+//									//
+// DHT NODER OCH DESS FUNKTIONER   //
+//								  //
+//###############################//
+//
+//struct for messages that we got from the lab handout
+type Msg struct {
+	Key, Src, Dist string
+	//...
+}
+
+//struct for Transport from lab handout
+type Transport struct {
+	bindAddress string
+}
+
+// listen function from lab handout
+func (transport *Transport) listen() {
+	udpAddr, err := net.ResolveUDPAddr("udp", transport.bindAddress)
+	conn, err := net.ListenUDP("udp", udpAddr)
+	defer conn.Close()
+	dec := json.NewDecoder(conn)
+	for {
+		msg := Msg{}
+		err := dec.Decode(&msg)
+		//we got a message maby baby?
+
+	}
+
+}
+
+// send function from lab handout
+func (transport *Transport) send(msg *Msg) {
+	udpAddr, err := net.ResolveUDPAddr("udp", dhtMsg.Dst)
+	conn, err := net.DialUDP("udp", nil, udpAddr)
+	defer conn.Close()
+	_, err = conn.Write(msg.Bytes())
+
+}
+
+//###################################//
+//									//
+// DHT NODER OCH DESS FUNKTIONER   //
+//								  //
+//###############################//
 type DHTNode struct {
 	id, address, port      string
 	successor, predecessor *DHTNode
@@ -28,6 +76,8 @@ type Fingers struct {
 	start string
 	node  *DHTNode
 }
+
+//func listen from lab handout
 
 func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
@@ -60,6 +110,7 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 				fingerID = strings.Repeat("0", len(n.id)-len(fingerID)) + fingerID
 			}
 			tempnode := n.lookup(fingerID)
+
 			if tempnode.id != fingerID {
 				tempnode = tempnode.successor
 
