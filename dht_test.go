@@ -3,7 +3,7 @@ fixa för nätverk:
 	addtoring // micke
 	lookup
 	update_others
-	kanske (updadte_fingertable)
+	kanske (update_fingertable)
 
 kolla vad som behövs i msg samt transport structen
 
