@@ -35,12 +35,27 @@ import (
 //###############################//
 //
 //struct for messages that we got from the lab handout
+
+/*
+vad är det vi vill skicka?
+vem vi är?| vad vi vill att den ska göra/utföra? |
+*/
 type Msg struct {
-	Key, Src, Dist string
+	//Type = metoden som skall köras
+	// KEY = värdet som skall köras
+	// Src = noden som kallade
+	// Dst = destinationsadressen
+	Type, Key, Src, Dst string
 	//...
 }
 
 //struct for Transport from lab handout
+/*
+
+vi vill ta emot ett meddelande.
+läsa ut meddelandet och sedan returnera svaret till source addressen
+
+*/
 type Transport struct {
 	node        *DHTNode
 	bindAddress string
@@ -56,6 +71,7 @@ func (transport *Transport) listen() {
 		msg := Msg{}
 		err := dec.Decode(&msg)
 		//we got a message maby baby?
+		//Parse vad det är för metod (lookup, addToring)
 
 	}
 
@@ -63,10 +79,25 @@ func (transport *Transport) listen() {
 
 // send function from lab handout
 func (transport *Transport) send(msg *Msg) {
-	udpAddr, err := net.ResolveUDPAddr("udp", dhtMsg.Dst)
+	udpAddr, err := net.ResolveUDPAddr("udp", msg.Dst)
 	conn, err := net.DialUDP("udp", nil, udpAddr)
 	defer conn.Close()
 	_, err = conn.Write(msg.Bytes())
+	//implementera msg.Bytes
+	//encoda till ett json object
+	//få det till en bytearray
+	//alltså en bytearray som representerar ett json objekt
+
+}
+
+func (msg *Msg) Bytes() []byte {
+	//encode to json
+	jsonenconded, err := json.Marshal(msg)
+	if err == nil {
+		return jsonenconded
+	}
+	fmt.Println("Error in Bytes func: ", err)
+	return nil
 
 }
 
@@ -85,7 +116,7 @@ type DHTNode struct {
 // populated by fingers (ie. a start string and a pointer to a DHTNODE)
 //so a DHTNode will now look like this:
 //
-//		id:00 address:nill port:nill
+//		id:00 address:nil port:nil
 //		successor:01 predecessor:09
 //		finger [start,node],[start,node],[start,node]
 type Fingers struct {
@@ -138,7 +169,7 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 		}
 
 	}
-	// fixar fingrar
+	// fixar fingrar där  för att fylla på med nollor på rätt ställen etc
 	for i := 1; i <= len(n.finger); i++ {
 		fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
 		if len(fingerID) < len(n.id) {
@@ -153,6 +184,8 @@ func (n *DHTNode) addToRing(newnode *DHTNode) {
 		fmt.Println(newnode.finger[i-1].node.id)
 
 	}
+	//skapa ett meddelande som skall köra lookup för vilken nod vi vill joina på
+	//då kör man join på den ringen
 
 	node := n.lookup(newnode.id)
 	oldnode := node.successor
@@ -429,7 +462,7 @@ func TestLookup(t *testing.T) {
  * successor    04
  * distance     4
  */
-/*
+
 func TestFinger3bits(t *testing.T) {
 	id0 := "00"
 	id1 := "01"
@@ -469,7 +502,7 @@ func TestFinger3bits(t *testing.T) {
 	fmt.Println("")
 	//	node0.testCalcFingers(3, 3)
 }
-*/
+
 /*
  * Example of expected output.
  *
@@ -533,7 +566,8 @@ func TestFinger3bits(t *testing.T) {
  * successor    d0a43af3a433353909e09739b964e64c107e5e92
  * distance     508258282811496687056817668076520806659544776736
  */
-func TestFinger160bits(t *testing.T) {
+
+/*func TestFinger160bits(t *testing.T) {
 	// note nil arg means automatically generate ID, e.g. f38f3b2dcc69a2093f258e31902e40ad33148385
 	node1 := makeDHTNode(nil, "localhost", "1111")
 	node2 := makeDHTNode(nil, "localhost", "1112")
@@ -571,3 +605,4 @@ func TestFinger160bits(t *testing.T) {
 	node3.testCalcFingers(160, 160)
 	fmt.Println("")
 }
+*/
