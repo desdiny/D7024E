@@ -231,16 +231,26 @@ func makeTransport(node *DHTNode, bindAddress string) *Transport {
 func (n *DHTNode) joinRing(networkaddr string) {
 	channel := make (chan Msg)
 	fmt.Println("calling node on address: ", networkaddr)
-	m := makeMsg(lookup, networkaddr, n.id, n.address)
+	m := makeMsg("lookup", networkaddr, n.id, n.address)
 	n.Transport.send(m, channel)
 
 	req := <- channel
-	joinidandaddress := n.id + n.address
-	m = makeMsg(join, req.Src, n.id, n.address)
+	joinidandaddress := n.id +","+ n.address
+	m = makeMsg("join", req.Src, joinidandaddress, n.address)
 	n.Transport.send(m, channel)
 
+	// waiting for answer
 	req = <-channel
-	n.predecessor
+
+	// split req (id and address)
+	a := strings.Split(req, ",")
+	// create a new node
+	s:= new(DHTNode)
+	s.id = a[0]
+	s.address = a[1]
+
+	n.predecessor = s
+
 	n.initFingerTable(newnode)
 
 
@@ -255,30 +265,48 @@ func (n *DHTNode) joinRing(networkaddr string) {
 //	newnode.update_others()
 }
 // the node that jumps on the node
-func (n *DHTNode) join(newnode *DHTNode) {
+func (n *DHTNode) join(msg *Msg) {
 	channel := make (chan Msg)
+	// splits the incomming keys
+	a := strings.Split(msg.Key, ",")
+
 	fmt.Println("the joining has begun, calling to set predecessor on next node")
-	joinidandaddress := newnode.id + newnode.address
-	m := makeMsg(changepredecessor, n.successor.address, joinidandaddress, n.address)
+	joinidandaddress := a[0] + "," + a[1]
+	m := makeMsg("changePredecessor", n.successor.address, joinidandaddress, n.address)
 	n.Transport.send(m, channel)
 
-	n.successor = newnode
+	//creates a new node 
+	s:= new(DHTNode)
+	s.id = a[0]
+	s.address = a[1]
+
+	// adds the new node as the nodes succsessor
+	n.successor = s
 
 	//adding both to one variable so we can send it in the key value
 	// have to concatinate when message is recived
-	joinidandaddress = n.id + n.address + n.predecessor
+	joinidandaddress = n.id + "," + n.address
 
 	//creates message
-	m = makeMsg(joinRing, newnode.address, joinidandaddress, n.address)
+	m = makeMsg("joinRing", newnode.address, joinidandaddress, n.address)
 
 	// sends message
 	n.Transport.send(m, channel)
 
 }
 
-func (n *DHTNode) changepredecessor(newnode *DHTNode) {
+func (n *DHTNode) changePredecessor(msg *Msg) {
 
-	n.predecessor = newnode
+	//split incomming key
+	a := strings.Split(msg.Key, ",")
+
+	//create a new node on this instance
+	s:= new(DHTNode)
+	s.id = a[0]
+	s.address = a[1]
+
+	// adds the node to n's predecessor
+	n.predecessor = s
 	
 }
 
