@@ -1,9 +1,9 @@
 package main
 
-import (
-	"fmt"
-	"dht"
-	)
-func func main() {
-	node : dht
+import "D7024E/dht"
+import "fmt"
+
+func main() {
+	id0 := "00"
+	n := dht.MakeDHTNode(&id0, "aaa", "aaa")
 }

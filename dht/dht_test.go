@@ -137,7 +137,7 @@ type Fingers struct {
 }
 
 
-func makeDHTNode(idcheck *string, address string, port string) *DHTNode {
+func MakeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
 	if idcheck == nil {
 		n.id = generateNodeId()
