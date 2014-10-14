@@ -1,3 +1,14 @@
+package dht
+
+import (
+	"encoding/json"
+	"fmt"
+	"math/big"
+	"net"
+	"strings"
+	"testing"
+	"time"
+)
 
 	//###################################//
    //									//
@@ -349,53 +360,53 @@ func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
 
 // H2 har kastat bort hela update finger table
 //update all nodes whose finger should refer to n
-func (n *DHTNode) update_others() {
-	for i := 1; i <= len(n.finger); i++ {
-		big_n := big.Int{}
-		sub_big_int := big.Int{}
-		result := big.Int{}
-
-		big_n.SetString(n.id, 16)
-		sub_big_int.Exp(big.NewInt(2), big.NewInt(int64(i-1)), nil)
+//func (n *DHTNode) update_others() {
+//	for i := 1; i <= len(n.finger); i++ {
+//		big_n := big.Int{}
+//		sub_big_int := big.Int{}
+//		result := big.Int{}
+//
+//		big_n.SetString(n.id, 16)
+//		sub_big_int.Exp(big.NewInt(2), big.NewInt(int64(i-1)), nil)
 
 		//big_n.Sub(big_n, sub_big_int)
 		//bigString := big_n.String()
-		result.Sub(&big_n, &sub_big_int)
-		if result.Sign() < 0 {
-			fmt.Println("fixar negativa tal")
+//		result.Sub(&big_n, &sub_big_int)
+//		if result.Sign() < 0 {
+//			fmt.Println("fixar negativa tal")
 			//will be used for 2^(nodes to be used)
-			big_totalnodes := big.Int{}
+//			big_totalnodes := big.Int{}
 			//the amount of nodes to be used
 			//big_nodes := big.Int{}
 			//used to do the calculation for sub
-			big_negative := result
+//			big_negative := result
 
 			//sets the nodes variable to a big int from the size of n.fingers
 
-			big_totalnodes.Exp(big.NewInt(2), big.NewInt(int64(len(n.finger))), nil)
+//			big_totalnodes.Exp(big.NewInt(2), big.NewInt(int64(len(n.finger))), nil)
 			//
 
-			fmt.Println("totalt antal noder: ", big_totalnodes)
+//			fmt.Println("totalt antal noder: ", big_totalnodes)
 			//calculate result
-			fmt.Println("big_negative: ", big_negative)
-			result.Add(&big_totalnodes, &big_negative)
+//			fmt.Println("big_negative: ", big_negative)
+//			result.Add(&big_totalnodes, &big_negative)
 
-			fmt.Println("här kommer det färdiga talet!: ")
+//			fmt.Println("här kommer det färdiga talet!: ")
 			/////HÄR MÅSTE DET CHECKAS SÅ ATT VI INTE TAR -2 när det ska vara node 7 t.ex
-		}
-		bigString := fmt.Sprintf("%x", result.Bytes())
-		fmt.Println(bigString)
-		fmt.Println()
-		fmt.Println()
-		p := n.lookup(bigString)
-		if p != n {
-			p.update_finger_table(n, i)
-		}
+//		}
+//		bigString := fmt.Sprintf("%x", result.Bytes())
+//		fmt.Println(bigString)
+//		fmt.Println()
+//		fmt.Println()
+//		p := n.lookup(bigString)
+//		if p != n {
+//			p.update_finger_table(n, i)
+//		}
 
-	}
+//	}
 
-}
-func (n *DHTNode) testCalcFingers(k int, m int) {
+//}
+//func (n *DHTNode) testCalcFingers(k int, m int) {
 	bigN := big.Int{}
 	bigN.SetString(n.id, 16)
 
