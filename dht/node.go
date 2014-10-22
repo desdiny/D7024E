@@ -1,13 +1,14 @@
 package dht
 
 import (
-	"encoding/json"
+	"encoding/json" // used for networking
 	"fmt"
-	"math/big"
+	"math/big" // used for fingers
 	"net"
 	"strings"
 	"testing"
-	"time"
+	"time" // used to update fingers and to set time for msg
+	"math/rand" //used for updating fingers
 )
 
 	//###################################//
@@ -125,7 +126,7 @@ func makeTransport(node *DHTNode, bindAddress string) *Transport {
   ////////////////////////////////////////////
 /////////////////////////////////////////////
 
-
+//node that wants to join ring
 func (n *DHTNode) joinRing(networkaddr string) {
 	channel := make (chan Msg)
 	fmt.Println("calling node on address: ", networkaddr)
@@ -161,7 +162,7 @@ func (n *DHTNode) joinRing(networkaddr string) {
 //	newnode.successor = oldnode
 //	newnode.predecessor = node
 //	oldnode.predecessor = newnode
-	n.update_others()
+//	n.update_others()
 }
 // the node that jumps on the node
 func (n *DHTNode) join(msg *Msg) {
@@ -289,16 +290,93 @@ func (d *DHTNode) tostring() (out string) {
 	return
 }
 
-func (d *DHTNode) lookup(hash string) *DHTNode {
+//func (d *DHTNode) lookup(hash string) *DHTNode {
 
-	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
+//	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
 		// returns that this node should be responible for this
 		// how to use type in this case?
 		// can we just send
-		makeMsg(, Dst, Key, Origin)
-		return d
+//		makeMsg(, Dst, Key, Origin)
+//		return d
+//	}
+
+//	dist := distance(d.id, hash, len(d.finger))
+//	index := dist.BitLen() - 1
+//	if index < 0 {
+//		return d
+//	}
+//	fmt.Println("INDEX", index)
+
+	//stegar ner tills fingret inte pekar på sig själv
+//	for ; index > 0 && d.finger[index].node == d; index-- {
+
+//	}
+	// Kollar så vi inte hamnar för långt
+//	diff := big.Int{}
+//	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+//	for index > 0 && diff.Sign() < 0 {
+//		index--
+//		diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+//	}
+	//kollar så vi inte pekar på oss själva
+//	if d.finger[index].node == d || diff.Sign() < 0 {
+//		fmt.Println("ERROR ERROR alles gebort auf the baut")
+//		return d.successor.lookup(hash)
+
+//	}
+	/* här skall vi alltså lägga in att hoppa till en annan nod med
+	   ett msg sedan skicka det msget till send
+	   a = den här noden vi är i
+	   b = noden som skall plaseras
+	   msget skall då alltså innehålla:
+
+	   Type = lookup
+	   KEY = b.id
+	   Src = a.ip
+	   Dst = fingerindex[x].ip
+	   Origin = b.ip
+
+	*/
+//	return d.finger[index].node.lookup(hash)
+	/*
+	   här under har vi den förra funktionen för att köra utan fingrar
+	*/
+	//	return d.successor.lookup(hash)
+//}
+
+//om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
+func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
+	fmt.Println("updating finger", i, "on", n.id)
+	if s.successor == n.finger[i-1].node {
+		n.finger[i-1].node = s
+		p := n.predecessor
+		if p != n {
+			p.update_finger_table(s, i)
+		}
+
 	}
 
+}
+
+
+
+
+
+//////////////////////////////////////////////////////////
+//				func for lookup 						//
+//														//
+//	if it cant find it here it uses fingers				//
+//	if unsing fingers it will jump to the closest		//
+//	to our hash and then run lookupNetwork on that one	//
+//////////////////////////////////////////////////////////
+func (d *DHTNode) lookup(hash string) {
+	channel := make (chan Msg)
+	//if d is  responsible for id
+	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
+		//returns d
+		return d
+	}
+	//otherwise use fingers
 	dist := distance(d.id, hash, len(d.finger))
 	index := dist.BitLen() - 1
 	if index < 0 {
@@ -320,43 +398,110 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 	//kollar så vi inte pekar på oss själva
 	if d.finger[index].node == d || diff.Sign() < 0 {
 		fmt.Println("ERROR ERROR alles gebort auf the baut")
-		return d.successor.lookup(hash)
+		// send message to the successor node to do a lookup
+		m := makeMsg("lookupNetwork", d.successor.address, hash, d.address)
+		d.Transport.send(m, channel)
 
-	}
-	/* här skall vi alltså lägga in att hoppa till en annan nod med
-	   ett msg sedan skicka det msget till send
-	   a = den här noden vi är i
-	   b = noden som skall plaseras
-	   msget skall då alltså innehålla:
+		//väntar på att vi ska få tillbaka ett svar
+		req := <- channel
+		//får tillbaka en nod req
 
-	   Type = lookup
-	   KEY = b.id
-	   Src = a.ip
-	   Dst = fingerindex[x].ip
-	   Origin = b.ip
 
-	*/
-	return d.finger[index].node.lookup(hash)
-	/*
-	   här under har vi den förra funktionen för att köra utan fingrar
-	*/
-	//	return d.successor.lookup(hash)
-}
+		////////////////////////////////////////////////
+		// Do i have to create a new node here?
+		// Before i return it?
+		// Probaly but will chill until i know for sure
+		///////////////////////////////////////////////
+		return req
 
-//om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
-func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
-	fmt.Println("updating finger", i, "on", n.id)
-	if s.successor == n.finger[i-1].node {
-		n.finger[i-1].node = s
-		p := n.predecessor
-		if p != n {
-			p.update_finger_table(s, i)
-		}
+
+		//return d.successor.lookup(hash)
 
 	}
 
-}
+	// if nothing of the above works
+	m := makeMsg("lookupNetwork", d.finger[index].node.address, hash, d.address)
+	d.Transport.send(m, channel)
 
+	//chilling for response
+	req := <-channel
+
+	////////////////////////////////////////////////
+	//Do i have to create a new node here?
+	// Before i return it as a *DHTNode?
+	// Probaly but will chill until i know for sure
+	///////////////////////////////////////////////
+	return req
+	//return d.finger[index].node.lookup(hash)
+
+
+	
+
+	
+}
+//////////////////////////////////////////////////////////
+//				func for lookupNetwork					//
+//														//
+//	beeing called from ether lookup on another computer	//
+//	or lookupNetwork on another computer				//
+//	sends the query forward if this isnt the right node	//
+// 	or answers to the node who ran the lookup req from 	//
+//	the begining whit help of msg.Origin				//
+//////////////////////////////////////////////////////////
+//node contacted over network
+func (d *DHTNode) lookupNetwork(msg *Msg) {
+	channel := make (chan Msg)
+
+
+	//if d is  responsible for id
+	if between([]byte(d.id), []byte(d.successor.id), []byte(msg.Key)) {
+		m := makeMsg("lookup", msg.Origin, d, d.address)
+		d.Transport.send(m, channel)
+
+		//return d
+	}
+	//otherwise use fingers
+	dist := distance(d.id, hash, len(d.finger))
+	index := dist.BitLen() - 1
+	if index < 0 {
+		m:= makeMsg("lookup", msg.Origin, d, d.address)
+		d.Transport.send(m, channel)
+
+		//return d
+	}
+	fmt.Println("INDEX", index)
+
+	//stegar ner tills fingret inte pekar på sig själv
+	for ; index > 0 && d.finger[index].node == d; index-- {
+
+	}
+	// Kollar så vi inte hamnar för långt
+	diff := big.Int{}
+	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+	for index > 0 && diff.Sign() < 0 {
+		index--
+		diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
+	}
+	//kollar så vi inte pekar på oss själva
+	if d.finger[index].node == d || diff.Sign() < 0 {
+		fmt.Println("ERROR ERROR alles gebort auf the baut")
+		// send message to the successor node to do a lookup
+		m := makeMsg("lookupNetwork", d.successor.address, hash, msg.Origin)
+		d.Transport.send(m, channel)
+
+
+		//return d.successor.lookup(hash)
+
+	}
+
+	// if nothing of the above works
+	m := makeMsg("lookupNetwork", d.finger[index].node.address, hash, msg.Origin)
+	d.Transport.send(m, channel)
+
+	//return d.finger[index].node.lookup(hash)
+
+	
+}
 
 // H2 har kastat bort hela update finger table
 //update all nodes whose finger should refer to n
@@ -404,12 +549,12 @@ func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
 //		}
 
 //	}
-
+//
 //}
 //func (n *DHTNode) testCalcFingers(k int, m int) {
-	bigN := big.Int{}
-	bigN.SetString(n.id, 16)
-
-	fmt.Println(calcFinger(bigN.Bytes(), k, m))
-
-}
+//	bigN := big.Int{}
+//	bigN.SetString(n.id, 16)
+//
+//	fmt.Println(calcFinger(bigN.Bytes(), k, m))
+//
+//}
