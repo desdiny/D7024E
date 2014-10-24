@@ -3,11 +3,11 @@ package dht
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
+	//"math/big"
 	"net"
-	"strings"
-	"testing"
-	"time"
+	//"strings"
+	//"testing"
+	//"time"
 )
 
 //###################################//
@@ -48,7 +48,7 @@ type Transport struct {
 }
 
 // listen function from lab handout
-func (transport *Transport) listen(msg *Msg) {
+func (transport *Transport) listen() {
 	udpAddr, err := net.ResolveUDPAddr("udp", transport.bindAddress)
 	conn, err := net.ListenUDP("udp", udpAddr)
 	defer conn.Close()
@@ -56,14 +56,6 @@ func (transport *Transport) listen(msg *Msg) {
 	for {
 		msg := Msg{}
 		err := dec.Decode(&msg)
-
-		if err != nil {
-			panic(err)
-		}
-
-		if msg.Type != nil {
-			msg <- msg
-		}
 		//Parse(msg)
 		// if type is response check timestamp and call the channel
 		//we got a message maby baby?
@@ -120,7 +112,5 @@ func (n *DHTNode) parse() {
 	case "findSuccessorFinger":
 		go n.findSuccessorFinger()
 		break
-
 	}
-
 }
