@@ -1,12 +1,29 @@
 package main
 
-import "D7024E/dht"
+import "D7024E/branches/Objective-2/dht"
 
-//import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
 
 func main() {
-	id0 := "00"
-	n := dht.MakeDHTNode(&id0, "aaa", "aaa")
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Print("Enter id: ")
+	text, _ := reader.ReadString('\n')
+	Id := ""
+	fmt.Println(text)
+
+	fmt.Println("Enter port: ")
+	Port := ""
+	fmt.Scanln(Port)
+
+	fmt.Println("Enter Ip: ")
+	Ip := ""
+	fmt.Scanln(Ip)
+
+	n := dht.MakeDHTNode(id, Ip, Port)
 
 	go func() {
 		c := time.Tick(3 * time.Second)
