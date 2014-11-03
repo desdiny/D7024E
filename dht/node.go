@@ -43,8 +43,6 @@ func (node *DHTNode) autoFingers() {
 
 	if finger != nil {
 		node.finger[i].node = finger
-	} else {
-		break
 	}
 
 }

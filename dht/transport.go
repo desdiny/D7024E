@@ -43,6 +43,7 @@ läsa ut meddelandet och sedan returnera svaret till source addressen
 type Transport struct {
 	node        *DHTNode
 	bindAddress string
+	port        string
 	channel     map[int64]chan Msg
 
 	// chan,,,, mutexlås
@@ -52,11 +53,11 @@ type Transport struct {
 func (transport *Transport) listen() {
 	udpAddr, err := net.ResolveUDPAddr("udp", transport.bindAddress)
 	if err != nil {
-		fmt.Println("Error in listen func: ", err)
+		fmt.Println("Error 1 in listen func: ", err)
 	}
 	conn, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		fmt.Println("Error in listen func: ", err)
+		fmt.Println("Error 2 in listen func: ", err)
 	}
 	defer conn.Close()
 	dec := json.NewDecoder(conn)
@@ -64,8 +65,11 @@ func (transport *Transport) listen() {
 		msg := Msg{}
 		err := dec.Decode(&msg)
 		if err != nil {
-			fmt.Println("Error in listen func: ", err)
+			fmt.Println("Error 3 in listen func: ", err)
 		}
+
+		go transport.node.parse(&msg)
+
 		//Parse(msg)
 		// if type is response check timestamp and call the channel
 		//we got a message maby baby?
@@ -114,22 +118,19 @@ func (msg *Msg) Bytes() []byte {
 
 func (n *DHTNode) parse(msg *Msg) {
 
-	msg := make(chan *Msg)
-	//go n.Transport.listen(msg)
-	go n.Transport.listen()
-	switch msg.Type {
+	//msg := make(chan *Msg)
+	//go n.Transport.listen()
+	//go n.Transport.listen()
 
+	switch msg.Type {
 	case "join":
 		go n.join(msg)
-		break
+
 	case "joinRing":
-		go n.joinRing(networkaddr)
-		break
+		go n.joinRing(msg.Key)
+
 	case "changePredecessor":
 		go n.changePredecessor(msg)
-		break
-	case "findSuccessorFinger":
-		go n.findSuccessorFinger()
-		break
+
 	}
 }
