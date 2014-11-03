@@ -34,8 +34,30 @@ func main() {
 	ip := strings.TrimSpace(Ip)
 	port := strings.TrimSpace(Port)
 
-	if &Ip != nil {
-		dht.MakeDHTNode(&id, ip, port)
+	n := dht.MakeDHTNode(&id, ip, port)
+	//n.JoinRing("localhost:1112")
+	fmt.Println("penis1")
+	for {
+		fmt.Println("Enter command: ")
+		Input, _ := reader.ReadString('\n')
+		fmt.Println("penis2")
+		fmt.Scanln(Input)
+		fmt.Println("penis3")
+		input := strings.TrimSpace(Input)
+		fmt.Println("penis4")
+
+		switch input {
+		//		case "join":
+		//			go n.Join(input)
+
+		case "joinRing":
+			go n.JoinRing("localhost:1112")
+
+			//		case "changePredecessor":
+			//			go n.changePredecessor(input)
+		default:
+			fmt.Println(input, "inte penis")
+		}
 
 	}
 

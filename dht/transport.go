@@ -50,7 +50,7 @@ type Transport struct {
 
 // listen function from lab handout
 func (transport *Transport) listen() {
-	transport.bindAddress = transport.node.address + ":" + transport.node.port
+	//transport.bindAddress = transport.node.address + ":" + transport.node.port
 	fmt.Println("Testning:")
 	fmt.Println("Detta är våran port: ", transport.node.port)
 	fmt.Println("Detta är våran address: ", transport.node.address)
@@ -68,6 +68,7 @@ func (transport *Transport) listen() {
 	defer conn.Close()
 	dec := json.NewDecoder(conn)
 	for {
+		fmt.Println("listening")
 		msg := Msg{}
 		err := dec.Decode(&msg)
 		if err != nil {
@@ -94,15 +95,19 @@ func (transport *Transport) send(msg *Msg, ch chan Msg) {
 	udpAddr, err := net.ResolveUDPAddr("udp", msg.Dst)
 	if err != nil {
 		fmt.Println("Error in send func: ", err)
+		return
 	}
+
 	conn, err := net.DialUDP("udp", nil, udpAddr)
 	if err != nil {
 		fmt.Println("Error in send func: ", err)
+		return
 	}
 	defer conn.Close()
 	_, err = conn.Write(msg.Bytes())
 	if err != nil {
 		fmt.Println("Error in send func: ", err)
+		return
 	}
 	//implementera msg.Bytes
 	//encoda till ett json object
@@ -123,6 +128,8 @@ func (msg *Msg) Bytes() []byte {
 }
 
 func (n *DHTNode) parse(msg *Msg) {
+	//check if gotten message
+	fmt.Println("Recived message!!")
 
 	//msg := make(chan *Msg)
 	//go n.Transport.listen()
@@ -130,13 +137,22 @@ func (n *DHTNode) parse(msg *Msg) {
 
 	switch msg.Type {
 	case "join":
-		go n.join(msg)
+		n.Join(msg)
 
 	case "joinRing":
-		go n.joinRing(msg.Key)
+		n.JoinRing(msg.Key)
 
 	case "changePredecessor":
-		go n.changePredecessor(msg)
+		n.changePredecessor(msg)
+
+	case "lookupNetwork":
+		n.lookupNetwork(msg)
+
+	case "response":
+		ch, ok := n.Transport.channel[msg.Time]
+		if ok {
+			ch <- *msg
+		}
 
 	}
 }
