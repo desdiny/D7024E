@@ -1,7 +1,8 @@
 package main
 
 import "D7024E/dht"
-import "fmt"
+
+//import "fmt"
 
 func main() {
 	id0 := "00"

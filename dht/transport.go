@@ -3,7 +3,7 @@ package dht
 import (
 	"encoding/json"
 	"fmt"
-	"math/big"
+	//	"math/big"
 	"net"
 	//	"strings"
 	//	"testing"
@@ -51,12 +51,21 @@ type Transport struct {
 // listen function from lab handout
 func (transport *Transport) listen() {
 	udpAddr, err := net.ResolveUDPAddr("udp", transport.bindAddress)
+	if err != nil {
+		fmt.Println("Error in listen func: ", err)
+	}
 	conn, err := net.ListenUDP("udp", udpAddr)
+	if err != nil {
+		fmt.Println("Error in listen func: ", err)
+	}
 	defer conn.Close()
 	dec := json.NewDecoder(conn)
 	for {
 		msg := Msg{}
 		err := dec.Decode(&msg)
+		if err != nil {
+			fmt.Println("Error in listen func: ", err)
+		}
 		//Parse(msg)
 		// if type is response check timestamp and call the channel
 		//we got a message maby baby?
@@ -73,9 +82,18 @@ func (transport *Transport) send(msg *Msg, ch chan Msg) {
 	}
 
 	udpAddr, err := net.ResolveUDPAddr("udp", msg.Dst)
+	if err != nil {
+		fmt.Println("Error in send func: ", err)
+	}
 	conn, err := net.DialUDP("udp", nil, udpAddr)
+	if err != nil {
+		fmt.Println("Error in send func: ", err)
+	}
 	defer conn.Close()
 	_, err = conn.Write(msg.Bytes())
+	if err != nil {
+		fmt.Println("Error in send func: ", err)
+	}
 	//implementera msg.Bytes
 	//encoda till ett json object
 	//få det till en bytearray

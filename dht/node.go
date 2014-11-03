@@ -187,7 +187,7 @@ func (n *DHTNode) join(msg *Msg) {
 	joinidandaddress = n.id + "," + n.address
 
 	//creates message
-	m = makeMsg("joinRing", newnode.address, joinidandaddress, n.address)
+	m = makeMsg("joinRing", n.address, joinidandaddress, n.address)
 
 	// sends message
 	n.Transport.send(m, channel)
@@ -360,7 +360,7 @@ func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
 //	if unsing fingers it will jump to the closest		//
 //	to our hash and then run lookupNetwork on that one	//
 //////////////////////////////////////////////////////////
-func (d *DHTNode) lookup(hash string) {
+func (d *DHTNode) lookup(hash string) *DHTNode {
 	channel := make(chan Msg)
 	//if d is  responsible for id
 	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
@@ -396,13 +396,12 @@ func (d *DHTNode) lookup(hash string) {
 		//väntar på att vi ska få tillbaka ett svar
 		req := <-channel
 		//får tillbaka en nod req
+		//creates a new node
+		s := new(DHTNode)
+		s.id = req.Key
+		s.address = req.Src
 
-		////////////////////////////////////////////////
-		// Do i have to create a new node here?
-		// Before i return it?
-		// Probaly but will chill until i know for sure
-		///////////////////////////////////////////////
-		return req
+		return s
 
 		//return d.successor.lookup(hash)
 
@@ -414,13 +413,13 @@ func (d *DHTNode) lookup(hash string) {
 
 	//chilling for response
 	req := <-channel
+	//create new node
+	s := new(DHTNode)
+	s.id = req.Key
+	s.address = req.Src
 
-	////////////////////////////////////////////////
-	//Do i have to create a new node here?
-	// Before i return it as a *DHTNode?
-	// Probaly but will chill until i know for sure
-	///////////////////////////////////////////////
-	return req
+	return s
+
 	//return d.finger[index].node.lookup(hash)
 
 }
@@ -440,16 +439,16 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 
 	//if d is  responsible for id
 	if between([]byte(d.id), []byte(d.successor.id), []byte(msg.Key)) {
-		m := makeMsg("lookup", msg.Origin, d, d.address)
+		m := makeMsg("lookup", msg.Origin, d.id, d.address)
 		d.Transport.send(m, channel)
 
 		//return d
 	}
 	//otherwise use fingers
-	dist := distance(d.id, hash, len(d.finger))
+	dist := distance(d.id, msg.Key, len(d.finger))
 	index := dist.BitLen() - 1
 	if index < 0 {
-		m := makeMsg("lookup", msg.Origin, d, d.address)
+		m := makeMsg("lookup", msg.Origin, d.id, d.address)
 		d.Transport.send(m, channel)
 
 		//return d
@@ -471,7 +470,7 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 	if d.finger[index].node == d || diff.Sign() < 0 {
 		fmt.Println("ERROR ERROR alles gebort auf the baut")
 		// send message to the successor node to do a lookup
-		m := makeMsg("lookupNetwork", d.successor.address, hash, msg.Origin)
+		m := makeMsg("lookupNetwork", d.successor.address, msg.Key, msg.Origin)
 		d.Transport.send(m, channel)
 
 		//return d.successor.lookup(hash)
@@ -479,7 +478,7 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 	}
 
 	// if nothing of the above works
-	m := makeMsg("lookupNetwork", d.finger[index].node.address, hash, msg.Origin)
+	m := makeMsg("lookupNetwork", d.finger[index].node.address, msg.Key, msg.Origin)
 	d.Transport.send(m, channel)
 
 	//return d.finger[index].node.lookup(hash)
