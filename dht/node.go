@@ -16,11 +16,26 @@ import (
 // DHT NODER OCH DESS FUNKTIONER     //
 //								      //
 //###################################//
+
+//###################################//
+//
+// Denna DHT NOD SOM sätts i porgrammet
+//
+//######
 type DHTNode struct {
 	id, address, port      string
 	successor, predecessor *DHTNode
 	finger                 []*Fingers //links to Fingers struct
 	Transport              *Transport
+}
+
+//#########
+//
+// Noder som sätts från utsidan
+//
+//######
+type OutsideNode struct {
+	id, address, port string
 }
 
 //added Fingers struct.. we say that every DHTNODE have finger witch is
@@ -47,6 +62,11 @@ func (node *DHTNode) autoFingers() {
 
 }
 
+//#############################//
+//							   //
+//		Make local node		   //
+//							   //
+//#############################//
 func MakeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
 	if idcheck == nil {
@@ -155,7 +175,8 @@ func (n *DHTNode) joinRing(networkaddr string) {
 	// split req (id and address)
 	a := strings.Split(req.Key, ",")
 	// create a new node
-	s := new(DHTNode)
+	//s := new(DHTNode)
+	s := new(OutsideNode)
 	s.id = a[0]
 	s.address = a[1]
 
@@ -187,7 +208,8 @@ func (n *DHTNode) join(msg *Msg) {
 	n.Transport.send(m, channel)
 
 	//creates a new node
-	s := new(DHTNode)
+	//s := new(DHTNode)
+	s := new(OutsideNode)
 	s.id = a[0]
 	s.address = a[1]
 
@@ -212,7 +234,8 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 	a := strings.Split(msg.Key, ",")
 
 	//create a new node on this instance
-	s := new(DHTNode)
+	//s := new(DHTNode)
+	s := new(OutsideNode)
 	s.id = a[0]
 	s.address = a[1]
 
@@ -352,18 +375,18 @@ func (d *DHTNode) tostring() (out string) {
 //}
 
 //om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
-func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
-	fmt.Println("updating finger", i, "on", n.id)
-	if s.successor == n.finger[i-1].node {
-		n.finger[i-1].node = s
-		p := n.predecessor
-		if p != n {
-			p.update_finger_table(s, i)
-		}
+//unc (n *DHTNode) update_finger_table(s *DHTNode, i int) {
+//	fmt.Println("updating finger", i, "on", n.id)
+//	if s.successor == n.finger[i-1].node {
+//		n.finger[i-1].node = s
+//		p := n.predecessor
+//		if p != n {
+//			p.update_finger_table(s, i)
+//		}
 
-	}
+//	}
 
-}
+//}
 
 //////////////////////////////////////////////////////////
 //				func for lookup 						//
@@ -409,7 +432,8 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 		req := <-channel
 		//får tillbaka en nod req
 		//creates a new node
-		s := new(DHTNode)
+		//s := new(DHTNode)
+		s := new(OutsideNode)
 		s.id = req.Key
 		s.address = req.Src
 
@@ -426,7 +450,8 @@ func (d *DHTNode) lookup(hash string) *DHTNode {
 	//chilling for response
 	req := <-channel
 	//create new node
-	s := new(DHTNode)
+	//s := new(DHTNode)
+	s := new(OutsideNode)
 	s.id = req.Key
 	s.address = req.Src
 
