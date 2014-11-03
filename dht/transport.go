@@ -43,7 +43,6 @@ läsa ut meddelandet och sedan returnera svaret till source addressen
 type Transport struct {
 	node        *DHTNode
 	bindAddress string
-	port        string
 	channel     map[int64]chan Msg
 
 	// chan,,,, mutexlås
@@ -51,7 +50,14 @@ type Transport struct {
 
 // listen function from lab handout
 func (transport *Transport) listen() {
+	transport.bindAddress = transport.node.address + ":" + transport.node.port
+	fmt.Println("Testning:")
+	fmt.Println("Detta är våran port: ", transport.node.port)
+	fmt.Println("Detta är våran address: ", transport.node.address)
+	fmt.Println("----------------------------------------")
+	fmt.Println("Detta är våran bindAddress: ", transport.bindAddress)
 	udpAddr, err := net.ResolveUDPAddr("udp", transport.bindAddress)
+	//udpAddr, err := net.ResolveUDPAddr("udp", transport.node.port)
 	if err != nil {
 		fmt.Println("Error 1 in listen func: ", err)
 	}

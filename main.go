@@ -1,11 +1,12 @@
 package main
 
-import "D7024E.git/branches/Objective-2/dht"
+import "D7024E/dht"
 
 import (
 	"bufio"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -29,8 +30,12 @@ func main() {
 	fmt.Println(Ip)
 	fmt.Println(Port)
 
+	id := strings.TrimSpace(Id)
+	ip := strings.TrimSpace(Ip)
+	port := strings.TrimSpace(Port)
+
 	if &Ip != nil {
-		dht.MakeDHTNode(&Id, Ip, Port)
+		dht.MakeDHTNode(&id, ip, port)
 
 	}
 
