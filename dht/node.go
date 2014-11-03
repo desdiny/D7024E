@@ -35,6 +35,20 @@ type Fingers struct {
 	node  *DHTNode
 }
 
+func (node *DHTNode) autoFingers() {
+
+	i := rand.Intn(100) //vet inte ifall det behövs en random var i intn(???)
+
+	finger := node.lookup(node.finger[i].node.id)
+
+	if finger != nil {
+		node.finger[i].node = finger
+	} else {
+		break
+	}
+
+}
+
 func MakeDHTNode(idcheck *string, address string, port string) *DHTNode {
 	n := new(DHTNode)
 	if idcheck == nil {

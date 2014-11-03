@@ -111,3 +111,25 @@ func (msg *Msg) Bytes() []byte {
 	return nil
 
 }
+
+func (n *DHTNode) parse() {
+
+	msg := make(chan *Msg)
+	go n.Transport.listen(msg)
+
+	switch msg.Type {
+
+	case "join":
+		go n.join(msg)
+		break
+	case "joinRing":
+		go n.joinRing(networkaddr)
+		break
+	case "changePredecessor":
+		go n.changePredecessor(msg)
+		break
+	case "findSuccessorFinger":
+		go n.findSuccessorFinger()
+		break
+	}
+}
