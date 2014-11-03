@@ -3,8 +3,8 @@ package dht
 import (
 	//"encoding/json" // used for networking
 	"fmt"
-	"math/big" // used for fingers
-	//"math/rand" //used for updating fingers
+	"math/big"  // used for fingers
+	"math/rand" //used for updating fingers
 	//"net"
 	"strings"
 	//"testing"
@@ -37,7 +37,7 @@ type Fingers struct {
 
 func (node *DHTNode) autoFingers() {
 
-	i := rand.Intn(100) //vet inte ifall det behövs en random var i intn(???)
+	i := rand.Intn(160) //vet inte ifall det behövs en random var i intn(???)
 
 	finger := node.lookup(node.finger[i].node.id)
 

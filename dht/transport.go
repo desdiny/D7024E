@@ -112,11 +112,11 @@ func (msg *Msg) Bytes() []byte {
 
 }
 
-func (n *DHTNode) parse() {
+func (n *DHTNode) parse(msg *Msg) {
 
 	msg := make(chan *Msg)
-	go n.Transport.listen(msg)
-
+	//go n.Transport.listen(msg)
+	go n.Transport.listen()
 	switch msg.Type {
 
 	case "join":
