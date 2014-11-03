@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math/big"
 	"net"
-	"strings"
-	"testing"
-	"time"
+	//	"strings"
+	//	"testing"
+	//	"time"
 )
 
 //###################################//
@@ -29,7 +29,8 @@ type Msg struct {
 	// Dst = destinationsadressen
 	// Origin = vem var det som ropa från början?? Vem var det??!!
 	// Time = timestamp
-	Type, Key, Src, Dst, Origin, Time string
+	Type, Key, Src, Dst, Origin string
+	Time                        int64
 }
 
 //struct for Transport from lab handout

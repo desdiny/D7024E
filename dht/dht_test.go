@@ -121,7 +121,7 @@ type DHTNode struct {
 	id, address, port      string
 	successor, predecessor *DHTNode
 	finger                 []*Fingers //links to Fingers struct
-	Transport *Transport
+	Transport 				*Transport
 }
 
 //added Fingers struct.. we say that every DHTNODE have finger witch is
@@ -251,6 +251,7 @@ func (n *DHTNode) joinRing(networkaddr string) {
 
 	n.predecessor = s
 
+	//inte än fixat
 	n.initFingerTable(newnode)
 
 
@@ -262,7 +263,7 @@ func (n *DHTNode) joinRing(networkaddr string) {
 //	newnode.successor = oldnode
 //	newnode.predecessor = node
 //	oldnode.predecessor = newnode
-//	newnode.update_others()
+	n.update_others()
 }
 // the node that jumps on the node
 func (n *DHTNode) join(msg *Msg) {
@@ -458,6 +459,8 @@ func (n *DHTNode) update_finger_table(s *DHTNode, i int) {
 
 }
 
+
+// H2 har kastat bort hela update finger table
 //update all nodes whose finger should refer to n
 func (n *DHTNode) update_others() {
 	for i := 1; i <= len(n.finger); i++ {

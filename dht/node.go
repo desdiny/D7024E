@@ -1,13 +1,13 @@
 package dht
 
 import (
-	"encoding/json" // used for networking
+	//"encoding/json" // used for networking
 	"fmt"
-	"math/big"  // used for fingers
-	"math/rand" //used for updating fingers
-	"net"
+	"math/big" // used for fingers
+	//"math/rand" //used for updating fingers
+	//"net"
 	"strings"
-	"testing"
+	//"testing"
 	"time" // used to update fingers and to set time for msg
 )
 
@@ -141,7 +141,7 @@ func (n *DHTNode) joinRing(networkaddr string) {
 	req = <-channel
 
 	// split req (id and address)
-	a := strings.Split(req, ",")
+	a := strings.Split(req.Key, ",")
 	// create a new node
 	s := new(DHTNode)
 	s.id = a[0]
@@ -150,17 +150,17 @@ func (n *DHTNode) joinRing(networkaddr string) {
 	n.predecessor = s
 
 	//inte än fixat
-	//n.initFingerTable(newnode)
+	/*n.initFingerTable(newnode)
 
 	//contacts node in ring
-	//	node := n.lookup(newnode.id)
-
-	//	oldnode := node.successor
-	//	node.successor = newnode
-	//	newnode.successor = oldnode
-	//	newnode.predecessor = node
-	//	oldnode.predecessor = newnode
-	//	n.update_others()
+		node := n.lookup(newnode.id)
+		oldnode := node.successor
+		node.successor = newnode
+		newnode.successor = oldnode
+		newnode.predecessor = node
+		oldnode.predecessor = newnode
+		n.update_others()
+	*/
 }
 
 // the node that jumps on the node
