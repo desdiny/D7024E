@@ -38,6 +38,17 @@ func main() {
 	n := dht.MakeDHTNode(&id, ip, port)
 	//n.JoinRing("localhost:1112")
 	fmt.Println("penis1")
+	go func() {
+		c := time.Tick(3 * time.Second)
+		for {
+			select {
+			case <-c:
+				n.AutoFingers()
+				//node.autoFingers()
+			}
+		}
+	}()
+
 	for {
 		fmt.Println("Enter command: ")
 		Input, _ := reader.ReadString('\n')
@@ -71,15 +82,5 @@ func main() {
 		}
 
 	}
-
-	go func() {
-		c := time.Tick(3 * time.Second)
-		for {
-			select {
-			case <-c:
-				//node.autoFingers()
-			}
-		}
-	}()
 
 }

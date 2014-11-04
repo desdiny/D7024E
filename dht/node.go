@@ -55,20 +55,24 @@ type Fingers struct {
 	node  *DHTNode
 }
 
-func (node *DHTNode) autoFingers() {
+func (node *DHTNode) AutoFingers() {
 	channel := make(chan Msg)
 	i := rand.Intn(3) //vet inte ifall det behövs en random var i intn(???)
-
+	//fmt.Println("Autouppdaterar finger: ", i)
 	//create autofingers message
-	m := makeMsg("lookupNetwork", node.Address(), node.finger[i].start, node.Address(), time.Now().UnixNano(), node.Address())
+	m := makeMsg("lookupNetwork", node.Address(), node.finger[i].start, node.Address(), TimeNow(), node.Address())
 	node.Transport.send(m, channel)
 	//waitning for answer
 	req := <-channel
 	//split address and port
 	a := strings.Split(req.Src, ":")
-	node.finger[i].node.id = req.Key
-	node.finger[i].node.address = a[0]
-	node.finger[i].node.port = a[1]
+	if req.Src != node.finger[i].node.Address() && req.Key != node.finger[i].node.id {
+		fmt.Println("Autouppdaterar finger: ", i)
+		node.finger[i].node.id = req.Key
+		node.finger[i].node.address = a[0]
+		node.finger[i].node.port = a[1]
+	}
+
 	//finger := node.lookupNetwork(node.finger[i].node.id)
 
 	//if finger != nil {
@@ -159,14 +163,14 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 	channel := make(chan Msg)
 	fmt.Println("JoinRing in Progress")
 	fmt.Println("calling node on address: ", networkaddr)
-	m := makeMsg("lookupNetwork", networkaddr, n.id, n.Address(), time.Now().UnixNano(), n.Address())
+	m := makeMsg("lookupNetwork", networkaddr, n.id, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 	fmt.Println("node has been called")
 
 	req := <-channel
 	fmt.Println("receved a answer on JoinRing with KEY: ", req.Key)
 	joinidandaddress := n.id + "," + n.address + "," + n.port
-	m = makeMsg("join", req.Src, joinidandaddress, n.Address(), time.Now().UnixNano(), n.Address())
+	m = makeMsg("join", req.Src, joinidandaddress, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 	fmt.Println("Sending message to join function....")
 
@@ -221,7 +225,7 @@ func (n *DHTNode) Join(msg *Msg) {
 	fmt.Println("")
 	oldsuccessor := n.successor
 	//joinidandaddress := a[0] + "," + a[1] + "," + a[2]
-	m := makeMsg("changePredecessor", n.successor.Address(), msg.Key, n.Address(), time.Now().UnixNano(), n.Address())
+	m := makeMsg("changePredecessor", n.successor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, nil)
 	fmt.Println("Sending changePredecessor to successor: ", n.successor.Address())
 	fmt.Println("")
@@ -474,18 +478,50 @@ func (n *DHTNode) initDB() {
 	defer db.Close()
 }
 
-func (n *DHTNode) addData() {
+//	used to lookup where to store data
+func (n *DHTNode) AddData(key string, value string) {
+	fmt.Println("")
+	fmt.Println("--------------------------------------")
+	fmt.Println("Starting AddData with key: ", key, " and value: ", value)
+	fmt.Println("")
+	channel := make(chan Msg)
+	hashKey := sha1hash(key)
+	m := makeMsg("lookupNetwork", n.Address(), key, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, channel)
+	fmt.Println("Lookup has been sent the key")
+	fmt.Println("")
+
+	req := <-channel
+	fmt.Println("Recived answer that the value should be placed on node: ", req.Key, " with address: ", req.Src)
+	fmt.Println("")
+	data := key + ":" + value
+	m = makeMsg("writeData", req.Src, data, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, nil)
 
 }
 
+func (n *DHTNode) writeData(msg *Msg) {
+	channel := make(chan Msg)
+	a := strings.Split(msg.Key, ":")
+
+}
+
+//reads the data
 func (n *DHTNode) readData() {
 
 }
 
+//searches where the deleted data is stored
 func (n *DHTNode) deleteData() {
 
 }
 
+//Deletes the data from the node
+func (n *DHTNode) removeData(msg *Msg) {
+
+}
+
+// replicate to predecessor
 func (n *DHTNode) replicateData() {
 
 }
