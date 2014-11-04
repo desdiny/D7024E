@@ -1,11 +1,13 @@
 package dht
 
 import (
+	"github.com/boltdb/bolt"
 	//"encoding/json" // used for networking
 	"fmt"
 	"math/big"  // used for fingers
 	"math/rand" //used for updating fingers
 	//"net"
+	"log"
 	"strings"
 	//"testing"
 	"time" // used to update fingers and to set time for msg
@@ -163,7 +165,7 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 
 	req := <-channel
 	fmt.Println("receved a answer on JoinRing with KEY: ", req.Key)
-	joinidandaddress := n.id + "," + n.address
+	joinidandaddress := n.id + "," + n.address + "," + n.port
 	m = makeMsg("join", req.Src, joinidandaddress, n.Address(), time.Now().UnixNano(), n.Address())
 	n.Transport.send(m, channel)
 	fmt.Println("Sending message to join function....")
@@ -174,15 +176,18 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 
 	// split req (id and address)
 	a := strings.Split(req.Key, ",")
+	n.predecessor.id = a[0]
+	n.predecessor.address = a[1]
+	n.predecessor.port = a[2]
 	// create a new node
-	s := new(DHTNode)
-	b := strings.Split(req.Src, ":")
+	//s := new(DHTNode)
+	//b := strings.Split(req.Src, ":")
 	//s := new(OutsideNode)
-	s.id = a[0]
-	s.address = a[1]
-	s.port = b[1]
-	fmt.Println("added the predecessor with ip: ", s.address, "id: ", s.id, "port: ", s.port)
-	n.predecessor = s
+	//s.id = a[0]
+	//s.address = a[1]
+	//s.port = b[1]
+	fmt.Println("added the predecessor with id: ", n.predecessor.id, "address: ", n.predecessor.address, "port: ", n.predecessor.port)
+	//n.predecessor = s
 	fmt.Println("Ending JoinRing")
 	fmt.Println("---------------------------------------")
 	//inte än fixat
@@ -207,25 +212,24 @@ func (n *DHTNode) Join(msg *Msg) {
 	//channel := make(chan Msg)
 	// splits the incomming keys
 	a := strings.Split(msg.Key, ",")
-	k := strings.Split(msg.Src, ":")
 
 	fmt.Println("the joining has begun, calling to set predecessor on next node")
 	fmt.Println("")
 	oldsuccessor := n.successor
-	joinidandaddress := a[0] + "," + a[1] + "," + k[1]
+	joinidandaddress := a[0] + "," + a[1] + "," + a[2]
 	m := makeMsg("changePredecessor", n.successor.Address(), joinidandaddress, n.Address(), time.Now().UnixNano(), n.Address())
 	n.Transport.send(m, nil)
 	fmt.Println("Sending changePredecessor to successor")
 	fmt.Println("")
 	//creates a new node
 	//s := new(DHTNode)
-	v := strings.Split(msg.Origin, ":")
+	//v := strings.Split(msg.Origin, ":")
 	//s.id = a[0]
 	//	s.address = a[1]
 	//s.port = v[1]
 	n.successor.id = a[0]
 	n.successor.address = a[1]
-	n.successor.port = v[1]
+	n.successor.port = a[2]
 	fmt.Println("added the new node: ", " id: ", n.successor.id, " address: ", n.successor.address, " port: ", n.successor.port)
 	fmt.Println("")
 	// adds the new node as the nodes succsessor
@@ -234,7 +238,7 @@ func (n *DHTNode) Join(msg *Msg) {
 
 	//adding both to one variable so we can send it in the key value
 	// have to concatinate when message is recived
-	joinidandaddress = n.id + "," + n.address
+	joinidandaddress = n.id + "," + n.address + "," + n.port
 
 	//creates message
 	m = makeMsg("response", msg.Origin, joinidandaddress, n.Address(), msg.Time, n.Address())
@@ -591,62 +595,6 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 
 }
 
-// H2 har kastat bort hela update finger table
-//update all nodes whose finger should refer to n
-//func (n *DHTNode) update_others() {
-//	for i := 1; i <= len(n.finger); i++ {
-//		big_n := big.Int{}
-//		sub_big_int := big.Int{}
-//		result := big.Int{}
-//
-//		big_n.SetString(n.id, 16)
-//		sub_big_int.Exp(big.NewInt(2), big.NewInt(int64(i-1)), nil)
-
-//big_n.Sub(big_n, sub_big_int)
-//bigString := big_n.String()
-//		result.Sub(&big_n, &sub_big_int)
-//		if result.Sign() < 0 {
-//			fmt.Println("fixar negativa tal")
-//will be used for 2^(nodes to be used)
-//			big_totalnodes := big.Int{}
-//the amount of nodes to be used
-//big_nodes := big.Int{}
-//used to do the calculation for sub
-//			big_negative := result
-
-//sets the nodes variable to a big int from the size of n.fingers
-
-//			big_totalnodes.Exp(big.NewInt(2), big.NewInt(int64(len(n.finger))), nil)
-//
-
-//			fmt.Println("totalt antal noder: ", big_totalnodes)
-//calculate result
-//			fmt.Println("big_negative: ", big_negative)
-//			result.Add(&big_totalnodes, &big_negative)
-
-//			fmt.Println("här kommer det färdiga talet!: ")
-/////HÄR MÅSTE DET CHECKAS SÅ ATT VI INTE TAR -2 när det ska vara node 7 t.ex
-//		}
-//		bigString := fmt.Sprintf("%x", result.Bytes())
-//		fmt.Println(bigString)
-//		fmt.Println()
-//		fmt.Println()
-//		p := n.lookup(bigString)
-//		if p != n {
-//			p.update_finger_table(n, i)
-//		}
-
-//	}
-//
-//}
-//func (n *DHTNode) testCalcFingers(k int, m int) {
-//	bigN := big.Int{}
-//	bigN.SetString(n.id, 16)
-//
-//	fmt.Println(calcFinger(bigN.Bytes(), k, m))
-//
-//}
-
 func (d *DHTNode) Address() string {
 	return d.address + ":" + d.port
 
@@ -664,3 +612,30 @@ func (d *DHTNode) FingerPrint() {
 func TimeNow() int64 {
 	return time.Now().UnixNano()
 }
+
+func (n *DHTNode) initDB() {
+
+	db, err := bolt.Open(n.id+".db", 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+}
+
+func (n *DHTNode) addData() {
+
+}
+
+func (n *DHTNode) readData() {
+
+}
+
+func (n *DHTNode) deleteData() {
+
+}
+
+func (n *DHTNode) replicateData() {
+
+}
+
+//to add something bucket wants []byte for key and a []byte for value
