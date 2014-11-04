@@ -14,9 +14,9 @@ import (
 )
 
 //###################################//
-//									//
+//									 //
 // DHT NODER OCH DESS FUNKTIONER     //
-//								      //
+//								     //
 //###################################//
 
 //######################################//
@@ -219,21 +219,22 @@ func (n *DHTNode) Join(msg *Msg) {
 	fmt.Println("the joining has begun, calling to set predecessor on next node")
 	fmt.Println("")
 	oldsuccessor := n.successor
-	joinidandaddress := a[0] + "," + a[1] + "," + a[2]
-	m := makeMsg("changePredecessor", n.successor.Address(), joinidandaddress, n.Address(), time.Now().UnixNano(), n.Address())
+	//joinidandaddress := a[0] + "," + a[1] + "," + a[2]
+	m := makeMsg("changePredecessor", n.successor.Address(), msg.Key, n.Address(), time.Now().UnixNano(), n.Address())
 	n.Transport.send(m, nil)
 	fmt.Println("Sending changePredecessor to successor")
 	fmt.Println("")
 	//creates a new node
-	//s := new(DHTNode)
+	s := new(DHTNode)
 	//v := strings.Split(msg.Origin, ":")
-	//s.id = a[0]
-	//	s.address = a[1]
-	//s.port = v[1]
-	n.successor.id = a[0]
-	n.successor.address = a[1]
-	n.successor.port = a[2]
-	fmt.Println("added the new node: ", " id: ", n.successor.id, " address: ", n.successor.address, " port: ", n.successor.port)
+	s.id = a[0]
+	s.address = a[1]
+	s.port = a[2]
+	//n.successor.id = a[0]
+	//n.successor.address = a[1]
+	//n.successor.port = a[2]
+	n.successor = s
+	fmt.Println("added the successor: ", " id: ", n.successor.id, " address: ", n.successor.address, " port: ", n.successor.port)
 	fmt.Println("")
 	// adds the new node as the nodes succsessor
 	//	n.successor = s
@@ -271,17 +272,16 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 	a := strings.Split(msg.Key, ",")
 
 	//create a new node on this instance
-	//s := new(DHTNode)
-	//s := new(OutsideNode)
-	//s.id = a[0]
-	//s.address = a[1]
-	//s.port = a[2]
-	n.predecessor.id = a[0]
-	n.predecessor.address = a[1]
-	n.predecessor.port = a[2]
+	s := new(DHTNode)
+	s.id = a[0]
+	s.address = a[1]
+	s.port = a[2]
+	//n.predecessor.id = a[0]
+	//n.predecessor.address = a[1]
+	//n.predecessor.port = a[2]
 
 	// adds the node to n's predecessor
-	//n.predecessor = s
+	n.predecessor = s
 
 	//m := makeMsg("changeSuccessor", s.Address(), n.id, n.Address(), msg.Time, n.Address())
 
@@ -292,70 +292,18 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 
 func (n *DHTNode) changeSuccessor(msg *Msg) {
 	a := strings.Split(msg.Key, ":")
-	n.successor.id = msg.Key
-	n.successor.address = a[1]
-	n.successor.port = a[0]
-	//s := new(DHTNode)
-	//s.id = msg.Key
+	//	n.successor.id = msg.Key
+	//n.successor.address = a[1]
+	//	n.successor.port = a[0]
+	s := new(DHTNode)
+	s.id = msg.Key
 	//a := strings.Split(msg.Key, ":")
-	//s.id = a[0]
-	//s.address = a[1]
-	//s.port = a[2]
-	//n.successor = s
+	s.id = a[0]
+	s.address = a[1]
+	s.port = a[2]
+	n.successor = s
 	n.finger[0].node = n.successor
 }
-
-//func (n *DHTNode) addToRing(newnode *DHTNode) {
-//	fmt.Println("Nodens id: ", newnode.id)
-//	if n.finger[0] == nil {
-// fixar fingrar special första gången
-//		for i := 1; i <= len(n.finger); i++ {
-//			fingerID, _ := calcFinger([]byte(n.id), i, len(n.finger))
-//			if len(fingerID) < len(n.id) {
-//				fingerID = strings.Repeat("0", len(n.id)-len(fingerID)) + fingerID
-//			}
-//			tempnode := n.lookup(fingerID)
-//
-//			if tempnode.id != fingerID {
-//				tempnode = tempnode.successor
-//
-//			}
-//			n.finger[i-1] = &Fingers{fingerID, tempnode}
-//
-//			fmt.Println(n.finger[i-1].node.id)
-//		}
-
-//	}
-//nyinlaggt den 14/10 vet inte om jag tänker rätt
-//n.initFingerTable(newnode)
-
-// fixar fingrar där  för att fylla på med nollor på rätt ställen etc
-//for i := 1; i <= len(n.finger); i++ {
-//	fingerID, _ := calcFinger([]byte(newnode.id), i, len(n.finger))
-//	if len(fingerID) < len(n.id) {
-//		fingerID = strings.Repeat("0", len(n.id)-len(fingerID)) + fingerID
-//	}
-//	tempnode := n.lookup(fingerID)
-//	if tempnode.id != fingerID {
-//		tempnode = tempnode.successor
-//
-//		}
-//		newnode.finger[i-1] = &Fingers{fingerID, tempnode}
-//		fmt.Println(newnode.finger[i-1].node.id)
-
-//	}
-//skapa ett meddelande som skall köra lookup för vilken nod vi vill joina på
-//då kör man join på den ringen
-
-//	node := n.lookup(newnode.id)
-//	oldnode := node.successor
-//	node.successor = newnode
-//	newnode.successor = oldnode
-//	newnode.predecessor = node
-//	oldnode.predecessor = newnode
-//	newnode.update_others()
-
-//}
 
 func (n *DHTNode) printRing() {
 
@@ -380,147 +328,6 @@ func (d *DHTNode) tostring() (out string) {
 
 	return
 }
-
-//func (d *DHTNode) lookup(hash string) *DHTNode {
-
-//	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
-// returns that this node should be responible for this
-// how to use type in this case?
-// can we just send
-//		makeMsg(, Dst, Key, Origin)
-//		return d
-//	}
-
-//	dist := distance(d.id, hash, len(d.finger))
-//	index := dist.BitLen() - 1
-//	if index < 0 {
-//		return d
-//	}
-//	fmt.Println("INDEX", index)
-
-//stegar ner tills fingret inte pekar på sig själv
-//	for ; index > 0 && d.finger[index].node == d; index-- {
-
-//	}
-// Kollar så vi inte hamnar för långt
-//	diff := big.Int{}
-//	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
-//	for index > 0 && diff.Sign() < 0 {
-//		index--
-//		diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
-//	}
-//kollar så vi inte pekar på oss själva
-//	if d.finger[index].node == d || diff.Sign() < 0 {
-//		fmt.Println("ERROR ERROR alles gebort auf the baut")
-//		return d.successor.lookup(hash)
-
-//	}
-/* här skall vi alltså lägga in att hoppa till en annan nod med
-   ett msg sedan skicka det msget till send
-   a = den här noden vi är i
-   b = noden som skall plaseras
-   msget skall då alltså innehålla:
-
-   Type = lookup
-   KEY = b.id
-   Src = a.ip
-   Dst = fingerindex[x].ip
-   Origin = b.ip
-
-*/
-//	return d.finger[index].node.lookup(hash)
-/*
-   här under har vi den förra funktionen för att köra utan fingrar
-*/
-//	return d.successor.lookup(hash)
-//}
-
-//om s är i (någon av) n  fingrar, uppdatera n's fingrar med s
-//unc (n *DHTNode) update_finger_table(s *DHTNode, i int) {
-//	fmt.Println("updating finger", i, "on", n.id)
-//	if s.successor == n.finger[i-1].node {
-//		n.finger[i-1].node = s
-//		p := n.predecessor
-//		if p != n {
-//			p.update_finger_table(s, i)
-//		}
-
-//	}
-
-//}
-
-//////////////////////////////////////////////////////////
-//				func for lookup 						//
-//														//
-//	if it cant find it here it uses fingers				//
-//	if unsing fingers it will jump to the closest		//
-//	to our hash and then run lookupNetwork on that one	//
-//////////////////////////////////////////////////////////
-// func (d *DHTNode) lookup(hash string) *DHTNode {
-// 	channel := make(chan Msg)
-// 	//if d is  responsible for id
-// 	if between([]byte(d.id), []byte(d.successor.id), []byte(hash)) {
-// 		//returns d
-// 		return d
-// 	}
-// 	//otherwise use fingers
-// 	dist := distance(d.id, hash, len(d.finger))
-// 	index := dist.BitLen() - 1
-// 	if index < 0 {
-// 		return d
-// 	}
-// 	fmt.Println("INDEX", index)
-
-// 	//stegar ner tills fingret inte pekar på sig själv
-// 	for ; index > 0 && d.finger[index].node == d; index-- {
-
-// 	}
-// 	// Kollar så vi inte hamnar för långt
-// 	diff := big.Int{}
-// 	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
-// 	for index > 0 && diff.Sign() < 0 {
-// 		index--
-// 		diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
-// 	}
-// 	//kollar så vi inte pekar på oss själva
-// 	if d.finger[index].node == d || diff.Sign() < 0 {
-// 		fmt.Println("ERROR ERROR alles gebort auf the baut")
-// 		// send message to the successor node to do a lookup
-// 		m := makeMsg("lookupNetwork", d.successor.address, hash, d.address)
-// 		d.Transport.send(m, channel)
-
-// 		//väntar på att vi ska få tillbaka ett svar
-// 		req := <-channel
-// 		//får tillbaka en nod req
-// 		//creates a new node
-// 		s := new(DHTNode)
-// 		//s := new(OutsideNode)
-// 		s.id = req.Key
-// 		s.address = req.Src
-
-// 		return s
-
-// 		//return d.successor.lookup(hash)
-
-// 	}
-
-// 	// if nothing of the above works
-// 	m := makeMsg("lookupNetwork", d.finger[index].node.address, hash, d.address)
-// 	d.Transport.send(m, channel)
-
-// 	//chilling for response
-// 	req := <-channel
-// 	//create new node
-// 	s := new(DHTNode)
-// 	//s := new(OutsideNode)
-// 	s.id = req.Key
-// 	s.address = req.Src
-
-// 	return s
-
-// 	//return d.finger[index].node.lookup(hash)
-
-// }
 
 //////////////////////////////////////////////////////////
 //				func for lookupNetwork					//
