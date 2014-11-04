@@ -209,6 +209,7 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 
 // the node that jumps on the node
 func (n *DHTNode) Join(msg *Msg) {
+	fmt.Println("")
 	fmt.Println("-----------------------------------------")
 	fmt.Println("Join operation initializing")
 	fmt.Println("")
@@ -222,7 +223,7 @@ func (n *DHTNode) Join(msg *Msg) {
 	//joinidandaddress := a[0] + "," + a[1] + "," + a[2]
 	m := makeMsg("changePredecessor", n.successor.Address(), msg.Key, n.Address(), time.Now().UnixNano(), n.Address())
 	n.Transport.send(m, nil)
-	fmt.Println("Sending changePredecessor to successor")
+	fmt.Println("Sending changePredecessor to successor: ", n.successor.Address())
 	fmt.Println("")
 	//creates a new node
 	s := new(DHTNode)
@@ -258,16 +259,20 @@ func (n *DHTNode) Join(msg *Msg) {
 
 	key := oldsuccessor.id + ":" + oldsuccessor.address + ":" + oldsuccessor.port
 	m = makeMsg("changeSuccessor", msg.Origin, key, n.Address(), TimeNow(), n.Address())
+	fmt.Println("Sending message to change Successor to: ", msg.Origin)
 	n.Transport.send(m, nil)
 
 	fmt.Println("sends respons to JoinRing to let it add with our cred")
 	fmt.Println("")
 	fmt.Println("Join operation complete")
 	fmt.Println("------------------------------------------")
+	fmt.Println("")
 }
 
 func (n *DHTNode) changePredecessor(msg *Msg) {
-
+	fmt.Println("")
+	fmt.Println("------------------------------------------")
+	fmt.Println("Starting changePredecessor")
 	//split incomming key
 	a := strings.Split(msg.Key, ",")
 
@@ -282,15 +287,22 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 
 	// adds the node to n's predecessor
 	n.predecessor = s
+	fmt.Println("Have changed the predecessor to: ", " id: ", s.id, " address: ", s.address, " port: ", s.port)
 
 	//m := makeMsg("changeSuccessor", s.Address(), n.id, n.Address(), msg.Time, n.Address())
 
 	// sends message
 	//	n.Transport.send(m, nil)
+	fmt.Println("Changing Predecessor completed")
+	fmt.Println("------------------------------------------")
+	fmt.Println("")
 
 }
 
 func (n *DHTNode) changeSuccessor(msg *Msg) {
+	fmt.Println("")
+	fmt.Println("------------------------------------------")
+	fmt.Println("Starting changeSuccessor")
 	a := strings.Split(msg.Key, ":")
 	//	n.successor.id = msg.Key
 	//n.successor.address = a[1]
@@ -302,7 +314,11 @@ func (n *DHTNode) changeSuccessor(msg *Msg) {
 	s.address = a[1]
 	s.port = a[2]
 	n.successor = s
+	fmt.Println("Have changed the successor to: ", " id: ", s.id, " address: ", s.address, " port: ", s.port)
 	n.finger[0].node = n.successor
+	fmt.Println("Changing Successor completed")
+	fmt.Println("------------------------------------------")
+	fmt.Println("")
 }
 
 func (n *DHTNode) printRing() {
