@@ -1,6 +1,6 @@
 package main
 
-import "D7024E/dht"
+import "D7024E.git/branches/objective-2/dht"
 
 import (
 	"bufio"
@@ -38,6 +38,35 @@ func main() {
 	n := dht.MakeDHTNode(&id, ip, port)
 	//n.JoinRing("localhost:1112")
 	fmt.Println("penis1")
+
+	go func() {
+
+		http.HandleFunc("/chord/", Chord)
+
+		http.HandleFunc("/chord/post/", func(w http.ResponseWriter, r *http.Request) {
+			Post(w, r)
+		})
+
+		http.HandleFunc("/chord/get/", func(w http.ResponseWriter, r *http.Request) {
+			Get(w, r)
+		})
+
+		http.HandleFunc("/chord/put/", func(w http.ResponseWriter, r *http.Request) {
+			Put(w, r)
+		})
+
+		http.HandleFunc("/chord/delete/", func(w http.ResponseWriter, r *http.Request) {
+			Del(w, r)
+		})
+
+		http.HandleFunc("/chord/list/", func(w http.ResponseWriter, r *http.Request) {
+			List(w, r)
+		})
+
+		http.ListenAndServe(":"+Port, nil)
+
+	}()
+
 	go func() {
 		c := time.Tick(3 * time.Second)
 		for {
