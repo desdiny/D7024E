@@ -522,6 +522,8 @@ func (n *DHTNode) writeData(msg *Msg) {
 		log.Fatal(err)
 	}
 
+	m := makeMsg("replicateData", n.successor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, nil)
 	//
 	// Send data to replication (predecessor)
 	//
@@ -549,13 +551,37 @@ func (n *DHTNode) removeData(msg *Msg) {
 }
 
 // replicate to predecessor
-//func (n *DHTNode) replicateData() {
+func (n *DHTNode) replicateData(msg *Msg) {
+	channel := make(chan Msg)
+	a := strings.Split(msg.Key, ":")
+	key := a[0]
+	value := a[1]
+	err = db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists(n.id)
+		if err != nil {
+			return err
+		}
 
-//}
+		err = bucket.Put(key, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 //should data be sent to successor
 
 func (n *DHTNode) lookupData() {
+
+	//
+	//check if data is between successor and successorsuccessor
+	//if so send data to successor
+	//
 
 }
 
