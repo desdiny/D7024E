@@ -643,7 +643,21 @@ func (n *DHTNode) returnData(msg *Msg) {
 	Once that is found we send a
 	removeData tho that node.
 *										*/
-func (n *DHTNode) deleteData() {
+func (n *DHTNode) deleteData(key string) {
+
+	channel := make(chan Msg)
+	hashKey := sha1hash(key)
+	m := makeMsg("lookupNetwork", n.Address(), hashKey, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, channel)
+
+	req := <-channel
+
+	m = makeMsg("removeData", req.Src, hashKey, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, channel)
+
+	req = <-channel
+
+	return req.Key
 
 }
 
@@ -658,6 +672,49 @@ func (n *DHTNode) deleteData() {
 *										*/
 func (n *DHTNode) removeData(msg *Msg) {
 
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(n.id))
+		if bucket == nil {
+			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
+		}
+		value := bucket.Get([]byte(msg.Key))
+
+		if value != nil {
+			db.Update(func(tx *bolt.Tx) error {
+				bucket.Delete([]byte(key))
+				m := makeMsg("removeReplication", n.predecessor.Address(), msg.Key, msg.Origin, TimeNow(), msg.Src)
+				n.Transport.send(m, nil)
+				return err
+			})
+		} else {
+			return nil
+		}
+		return nil
+	})
+}
+
+func (n *DHTNode) removeReplication(msg *Msg) {
+
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(n.id))
+		if bucket == nil {
+			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
+		}
+		value := bucket.Get([]byte(msg.Key))
+
+		if value != nil {
+
+			db.Update(func(tx *bolt.Tx) error {
+				bucket.Delete([]byte(key))
+				return err
+			})
+
+		} else {
+			return nil
+		}
+
+		return nil
+	})
 }
 
 /*										*

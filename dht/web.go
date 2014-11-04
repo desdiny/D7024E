@@ -45,17 +45,19 @@ func Chord(w http.ResponseWriter, r *http.Request) {
 		"</form>")
 }
 
-func Post(w http.ResponseWriter, r *http.Request) {
-	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+func (n *DHTNode) Post(w http.ResponseWriter, r *http.Request) {
+	/*db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
-	}
-
+	defer db.Close()
+	}*/
 	key := r.FormValue("Post_insertkey")
 	value := r.FormValue("Post_insertvalue")
 
+	n.AddData(key, value)
+
 	//fmt.Fprintf(w, "Print key-value post: ", key, value)
-	db.View(func(tx *bolt.Tx) error {
+	/*db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("KeyValuePair"))
 		v := b.Get([]byte(key))
 
@@ -82,9 +84,7 @@ func Post(w http.ResponseWriter, r *http.Request) {
 		}
 
 		return nil
-	})
-
-	defer db.Close()
+	})*/
 
 }
 
@@ -200,11 +200,9 @@ func Del(w http.ResponseWriter, r *http.Request) {
 			})
 
 		} else {
-
 			fmt.Fprintf(w, "<p><a href=\"/chord/\">go back</a></p>"+
 				"<p>There are no key :%s to remove</p>", key)
 			return nil
-
 		}
 
 		return nil
