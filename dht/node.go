@@ -176,6 +176,9 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 
 	// split req (id and address)
 	a := strings.Split(req.Key, ",")
+
+	//fmt.Println("")
+
 	n.predecessor.id = a[0]
 	n.predecessor.address = a[1]
 	n.predecessor.port = a[2]
@@ -238,13 +241,19 @@ func (n *DHTNode) Join(msg *Msg) {
 
 	//adding both to one variable so we can send it in the key value
 	// have to concatinate when message is recived
-	joinidandaddress = n.id + "," + n.address + "," + n.port
+	joinidandaddresstest := n.id + "," + n.address + "," + n.port
 
 	//creates message
-	m = makeMsg("response", msg.Origin, joinidandaddress, n.Address(), msg.Time, n.Address())
+	fmt.Println("<-----message content----->")
+	fmt.Println("msg.origin: ", msg.Origin)
+	fmt.Println("joinidandaddress: ", joinidandaddresstest)
+	fmt.Println("n.Address(): ", n.Address())
+	fmt.Println("<-----message content----->")
+
+	o := makeMsg("response", msg.Origin, joinidandaddresstest, n.Address(), msg.Time, n.Address())
 
 	// sends message
-	n.Transport.send(m, nil)
+	n.Transport.send(o, nil)
 
 	key := oldsuccessor.id + ":" + oldsuccessor.address + ":" + oldsuccessor.port
 	m = makeMsg("changeSuccessor", msg.Origin, key, n.Address(), TimeNow(), n.Address())
@@ -526,6 +535,9 @@ func (d *DHTNode) tostring() (out string) {
 func (d *DHTNode) lookupNetwork(msg *Msg) {
 	fmt.Println("-----------------------------------")
 	fmt.Println("Starting lookupNetwork")
+
+	fmt.Println("Check between vaiables, d.id:", d.id, " d.successor.id: ", d.successor.id, " msg.Key: ", msg.Key)
+	fmt.Println("This is our message: msg.Key", msg.Key, "msg.Origin: ", msg.Origin)
 	//if d is  responsible for id
 	if between([]byte(d.id), []byte(d.successor.id), []byte(msg.Key)) {
 		m := makeMsg("response", msg.Origin, d.id, d.Address(), msg.Time, d.Address())
@@ -607,6 +619,23 @@ func (d *DHTNode) FingerPrint() {
 		fmt.Println("finger nr:", i, " ", d.finger[i].start)
 
 	}
+}
+func (d *DHTNode) IdPrint() {
+
+	fmt.Println("Detta är ditt id:", d.id)
+
+}
+
+func (d *DHTNode) PreID() {
+
+	fmt.Println("Detta är din predecessor, id: ", d.predecessor.id, "address: ", d.predecessor.address, "port: ", d.predecessor.port)
+
+}
+
+func (d *DHTNode) SucID() {
+
+	fmt.Println("Detta är din successor, id: ", d.successor.id, "address: ", d.successor.address, "port: ", d.successor.port)
+
 }
 
 func TimeNow() int64 {

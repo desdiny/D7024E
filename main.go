@@ -1,6 +1,6 @@
 package main
 
-import "D7024E/dht"
+import "D7024E.git/branches/Objective-2/dht"
 
 import (
 	"bufio"
@@ -18,7 +18,8 @@ func main() {
 	//fmt.Println(text)
 
 	fmt.Println("Enter Ip: ")
-	Ip, _ := reader.ReadString('\n')
+	//Ip, _ := reader.ReadString('\n')
+	Ip := "localhost"
 	fmt.Scanln(Ip)
 
 	fmt.Println("Enter port: ")
@@ -57,6 +58,15 @@ func main() {
 			//			go n.changePredecessor(input)
 		case "fingers":
 			go n.FingerPrint()
+
+		case "id":
+			go n.IdPrint()
+
+		case "preid":
+			go n.PreID()
+
+		case "sucid":
+			go n.SucID()
 
 		}
 
