@@ -761,7 +761,7 @@ func (n *DHTNode) lookupData(msg *Msg) {
 				str := key + ":" + value
 				m := makeMsg("writeReplicationData", n.successor.Address(), str, n.Address(), TimeNow(), n.Address())
 				n.Transport.send(m, nil)
-				m = makeMsg("deleteReplicationData", n.predecessor.Address(), str, n.Address(), TimeNow(), n.Address())
+				m = makeMsg("removeReplication", n.predecessor.Address(), str, n.Address(), TimeNow(), n.Address())
 				n.Transport.send(m, nil)
 			}
 
@@ -777,10 +777,6 @@ func (n *DHTNode) lookupData(msg *Msg) {
 //check if data is between successor and successorsuccessor
 //if so send data to successor
 //
-
-func (n *DHTNode) deleteReplicationData(msg *Msg) {
-
-}
 
 func (n *DHTNode) writeReplicationData(msg *Msg) {
 	a := strings.Split(msg.Key, ":")
