@@ -505,13 +505,13 @@ func (n *DHTNode) writeData(msg *Msg) {
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(n.id)
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err
 		}
 
-		err = bucket.Put(key, value)
+		err = bucket.Put([]byte(key), []byte(value))
 		if err != nil {
 			return err
 		}
@@ -531,12 +531,38 @@ func (n *DHTNode) writeData(msg *Msg) {
 }
 
 //reads the data
-func (n *DHTNode) readData(key string) {
+func (n *DHTNode) readData(key string) string {
+	channel := make(chan Msg)
+	hashKey := sha1hash(key)
+	m := makeMsg("lookupNetwork", n.Address(), hashKey, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, channel)
+
+	req := <-channel
+
+	m = makeMsg("returnData", req.Src, hashKey, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, channel)
+
+	req = <-channel
+
+	return req.Key
 
 }
 
 // Returns data to the node req it
 func (n *DHTNode) returnData(msg *Msg) {
+	err := db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(n.id))
+		if bucket == nil {
+			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
+		}
+
+		value := bucket.Get([]byte(msg.Key))
+
+		m := makeMsg("response", msg.Src, string(value), n.Address(), msg.Time, n.Address())
+		n.Transport.send(m, nil)
+
+		return nil
+	})
 
 }
 
@@ -556,13 +582,13 @@ func (n *DHTNode) replicateData(msg *Msg) {
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err = db.Update(func(tx *bolt.Tx) error {
-		bucket, err := tx.CreateBucketIfNotExists(n.id)
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err
 		}
 
-		err = bucket.Put(key, value)
+		err = bucket.Put([]byte(key), []byte(value))
 		if err != nil {
 			return err
 		}
@@ -577,6 +603,7 @@ func (n *DHTNode) replicateData(msg *Msg) {
 //should data be sent to successor
 
 func (n *DHTNode) lookupData() {
+	//channel := make(chan Msg)
 
 	//
 	//check if data is between successor and successorsuccessor

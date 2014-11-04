@@ -1,6 +1,6 @@
 package main
 
-import "D7024E.git/branches/objective-2/dht"
+import "D7024E/dht"
 
 import (
 	"bufio"
