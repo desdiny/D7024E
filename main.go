@@ -1,7 +1,7 @@
 package main
 
-import "D7024E.git/branches/Objective-2/dht"
-
+//import "D7024E.git/branches/Objective-2/dht"
+import "D7024E/dht"
 import (
 	"bufio"
 	"fmt"

@@ -694,13 +694,60 @@ func (n *DHTNode) replicateData(msg *Msg) {
 
 
 *										*/
-func (n *DHTNode) lookupData() {
-	//channel := make(chan Msg)
+func (n *DHTNode) lookupData(msg *Msg) {
+	db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("MyBucket"))
+		b.ForEach(func(k, v []byte) error {
+			if between([]byte(n.successor.id), []byte(n.finger[1].node.id), k) {
+				key := string(k)
+				value := string(v)
+				str := key + ":" + value
+				m := makeMsg("writeReplicationData", n.successor.Address(), str, n.Address(), TimeNow(), n.Address())
+				n.Transport.send(m, nil)
+				m = makeMsg("deleteReplicationData", n.predecessor.Address(), str, n.Address(), TimeNow(), n.Address())
+				n.Transport.send(m, nil)
+			}
 
-	//
-	//check if data is between successor and successorsuccessor
-	//if so send data to successor
-	//
+			return nil
+		})
+		return nil
+	})
+}
+
+//channel := make(chan Msg)
+
+//
+//check if data is between successor and successorsuccessor
+//if so send data to successor
+//
+
+func (n *DHTNode) deleteReplicationData(msg *Msg) {
+
+}
+
+func (n *DHTNode) writeReplicationData(msg *Msg) {
+	a := strings.Split(msg.Key, ":")
+	key := a[0]
+	value := a[1]
+	err := db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
+		if err != nil {
+			return err
+		}
+
+		err = bucket.Put([]byte(key), []byte(value))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//m := makeMsg("replicateData", n.predecessor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
+	//n.Transport.send(m, nil
 
 }
 
