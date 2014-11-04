@@ -468,6 +468,38 @@ func (d *DHTNode) SucID() {
 
 }
 
+func (n *DHTNode) Ping() {
+	fmt.Println("test")
+
+	channel := make(chan Msg)
+
+	m := makeMsg("Pong", n.successor.Address(),
+		"ALLO", n.Address(), TimeNow(), n.Address())
+
+	//fmt.Println(m.Type)
+	n.Transport.send(m, channel)
+	fmt.Println(n.Address())
+
+	select {
+	case req := <-channel:
+		fmt.Println("Successor is responding", req)
+	case <-time.After(2 * time.Second):
+		fmt.Println("Successor is not responding")
+
+	}
+
+}
+func (n *DHTNode) Pong(msg *Msg) {
+	if msg.Key == "ALLO" {
+		fmt.Println("Har fått pong, skickar ping")
+		m := makeMsg("response", msg.Origin, "Ping", n.Address(), msg.Time, n.Address())
+		fmt.Println("Pong value", m)
+		n.Transport.send(m, nil)
+	} else {
+		fmt.Println("har inte fått ping :/")
+	}
+}
+
 func TimeNow() int64 {
 	return time.Now().UnixNano()
 }
@@ -496,7 +528,7 @@ func (n *DHTNode) AddData(key string, value string) {
 	fmt.Println("Starting AddData with key: ", key, " and value: ", value)
 	fmt.Println("")
 	channel := make(chan Msg)
-	hashKey := sha1hash(key)
+	//hashKey := sha1hash(key)
 	m := makeMsg("lookupNetwork", n.Address(), key, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 	fmt.Println("Lookup has been sent the key")
@@ -522,8 +554,8 @@ func (n *DHTNode) AddData(key string, value string) {
 
 *										*/
 func (n *DHTNode) writeData(msg *Msg) {
-	channel := make(chan Msg)
-	a := strings.Split(msg.Key, ":")
+	//channel := make(chan Msg)
+	//a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
 	err := db.Update(func(tx *bolt.Tx) error {

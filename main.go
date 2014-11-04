@@ -1,10 +1,11 @@
 package main
 
-import "D7024E/dht"
+import "D7024E.git/branches/Objective-2/dht"
 
 import (
 	"bufio"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -41,29 +42,31 @@ func main() {
 
 	go func() {
 
-		http.HandleFunc("/chord/", Chord)
+		http.HandleFunc("/chord/", dht.Chord)
 
 		http.HandleFunc("/chord/post/", func(w http.ResponseWriter, r *http.Request) {
-			Post(w, r)
+			dht.Post(w, r)
 		})
 
 		http.HandleFunc("/chord/get/", func(w http.ResponseWriter, r *http.Request) {
-			Get(w, r)
+			dht.Get(w, r)
 		})
 
 		http.HandleFunc("/chord/put/", func(w http.ResponseWriter, r *http.Request) {
-			Put(w, r)
+			dht.Put(w, r)
 		})
 
 		http.HandleFunc("/chord/delete/", func(w http.ResponseWriter, r *http.Request) {
-			Del(w, r)
+			dht.Del(w, r)
 		})
 
 		http.HandleFunc("/chord/list/", func(w http.ResponseWriter, r *http.Request) {
-			List(w, r)
+			dht.List(w, r)
 		})
 
 		http.ListenAndServe(":"+Port, nil)
+
+		fmt.Println("The page is rolling")
 
 	}()
 
@@ -72,7 +75,7 @@ func main() {
 		for {
 			select {
 			case <-c:
-				n.AutoFingers()
+				//n.AutoFingers()
 				//node.autoFingers()
 			}
 		}
@@ -107,6 +110,10 @@ func main() {
 
 		case "sucid":
 			go n.SucID()
+
+		case "ping":
+			fmt.Println("hate")
+			go n.Ping()
 
 		}
 

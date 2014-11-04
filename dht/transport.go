@@ -5,9 +5,9 @@ import (
 	"fmt"
 	//	"math/big"
 	"net"
+
 	//	"strings"
 	//	"testing"
-	//	"time"
 )
 
 //###################################//
@@ -157,5 +157,10 @@ func (n *DHTNode) parse(msg *Msg) {
 			ch <- *msg
 		}
 
+	case "Pong":
+		n.Pong(msg)
+
+	case "Ping":
+		n.Ping()
 	}
 }
