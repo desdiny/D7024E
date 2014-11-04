@@ -507,7 +507,8 @@ func TimeNow() int64 {
 // initializing DB
 func (n *DHTNode) initDB() {
 
-	db, err := bolt.Open(n.id+".db", 0600, nil)
+	//db, err := bolt.Open(n.id+".db", 0600, nil)
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -528,7 +529,7 @@ func (n *DHTNode) AddData(key string, value string) {
 	fmt.Println("Starting AddData with key: ", key, " and value: ", value)
 	fmt.Println("")
 	channel := make(chan Msg)
-	//hashKey := sha1hash(key)
+	hashKey := sha1hash(key)
 	m := makeMsg("lookupNetwork", n.Address(), key, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 	fmt.Println("Lookup has been sent the key")
@@ -554,11 +555,17 @@ func (n *DHTNode) AddData(key string, value string) {
 
 *										*/
 func (n *DHTNode) writeData(msg *Msg) {
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	//channel := make(chan Msg)
-	//a := strings.Split(msg.Key, ":")
+	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err
@@ -619,7 +626,14 @@ func (n *DHTNode) readData(key string) string {
 	readData.
 *										*/
 func (n *DHTNode) returnData(msg *Msg) {
-	err := db.View(func(tx *bolt.Tx) error {
+
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
@@ -653,11 +667,9 @@ func (n *DHTNode) deleteData(key string) {
 	req := <-channel
 
 	m = makeMsg("removeData", req.Src, hashKey, n.Address(), TimeNow(), n.Address())
-	n.Transport.send(m, channel)
+	n.Transport.send(m, nil)
 
-	req = <-channel
-
-	return req.Key
+	return
 
 }
 
@@ -672,7 +684,13 @@ func (n *DHTNode) deleteData(key string) {
 *										*/
 func (n *DHTNode) removeData(msg *Msg) {
 
-	err := db.View(func(tx *bolt.Tx) error {
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
@@ -681,7 +699,7 @@ func (n *DHTNode) removeData(msg *Msg) {
 
 		if value != nil {
 			db.Update(func(tx *bolt.Tx) error {
-				bucket.Delete([]byte(key))
+				bucket.Delete([]byte(msg.Key))
 				m := makeMsg("removeReplication", n.predecessor.Address(), msg.Key, msg.Origin, TimeNow(), msg.Src)
 				n.Transport.send(m, nil)
 				return err
@@ -695,7 +713,13 @@ func (n *DHTNode) removeData(msg *Msg) {
 
 func (n *DHTNode) removeReplication(msg *Msg) {
 
-	err := db.View(func(tx *bolt.Tx) error {
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
@@ -705,7 +729,7 @@ func (n *DHTNode) removeReplication(msg *Msg) {
 		if value != nil {
 
 			db.Update(func(tx *bolt.Tx) error {
-				bucket.Delete([]byte(key))
+				bucket.Delete([]byte(msg.Key))
 				return err
 			})
 
@@ -724,11 +748,18 @@ func (n *DHTNode) removeReplication(msg *Msg) {
 	from its successor.
 *										*/
 func (n *DHTNode) replicateData(msg *Msg) {
-	channel := make(chan Msg)
+
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	//channel := make(chan Msg)
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err
@@ -752,6 +783,12 @@ func (n *DHTNode) replicateData(msg *Msg) {
 
 *										*/
 func (n *DHTNode) lookupData(msg *Msg) {
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("MyBucket"))
 		b.ForEach(func(k, v []byte) error {
@@ -779,10 +816,17 @@ func (n *DHTNode) lookupData(msg *Msg) {
 //
 
 func (n *DHTNode) writeReplicationData(msg *Msg) {
+
+	db, err := bolt.Open("node.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err

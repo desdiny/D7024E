@@ -1,7 +1,8 @@
 package main
 
-//import "D7024E.git/branches/Objective-2/dht"
-import "D7024E/dht"
+import "D7024E.git/branches/Objective-2/dht"
+
+//import "D7024E/dht"
 import (
 	"bufio"
 	"fmt"
@@ -39,7 +40,6 @@ func main() {
 	n := dht.MakeDHTNode(&id, ip, port)
 	//n.JoinRing("localhost:1112")
 	fmt.Println("penis1")
-
 	go func() {
 
 		http.HandleFunc("/chord/", dht.Chord)
@@ -64,7 +64,7 @@ func main() {
 			dht.List(w, r)
 		})
 
-		http.ListenAndServe(":"+Port, nil)
+		http.ListenAndServe(":"+port, nil)
 
 		fmt.Println("The page is rolling")
 
