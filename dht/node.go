@@ -494,7 +494,7 @@ func (n *DHTNode) AddData(key string, value string) {
 	req := <-channel
 	fmt.Println("Recived answer that the value should be placed on node: ", req.Key, " with address: ", req.Src)
 	fmt.Println("")
-	data := key + ":" + value
+	data := hashKey + ":" + value
 	m = makeMsg("writeData", req.Src, data, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, nil)
 
@@ -503,11 +503,38 @@ func (n *DHTNode) AddData(key string, value string) {
 func (n *DHTNode) writeData(msg *Msg) {
 	channel := make(chan Msg)
 	a := strings.Split(msg.Key, ":")
+	key := a[0]
+	value := a[1]
+	err = db.Update(func(tx *bolt.Tx) error {
+		bucket, err := tx.CreateBucketIfNotExists(n.id)
+		if err != nil {
+			return err
+		}
+
+		err = bucket.Put(key, value)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//
+	// Send data to replication (predecessor)
+	//
 
 }
 
 //reads the data
-func (n *DHTNode) readData() {
+func (n *DHTNode) readData(key string) {
+
+}
+
+// Returns data to the node req it
+func (n *DHTNode) returnData(msg *Msg) {
 
 }
 
@@ -516,13 +543,19 @@ func (n *DHTNode) deleteData() {
 
 }
 
-//Deletes the data from the node
+//Deletes the data from the node and
 func (n *DHTNode) removeData(msg *Msg) {
 
 }
 
 // replicate to predecessor
-func (n *DHTNode) replicateData() {
+//func (n *DHTNode) replicateData() {
+
+//}
+
+//should data be sent to successor
+
+func (n *DHTNode) lookupData() {
 
 }
 
