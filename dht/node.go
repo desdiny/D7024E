@@ -182,10 +182,13 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 	a := strings.Split(req.Key, ",")
 
 	//fmt.Println("")
-
-	n.predecessor.id = a[0]
-	n.predecessor.address = a[1]
-	n.predecessor.port = a[2]
+	s := new(DHTNode)
+	s.id = a[0]
+	s.address = a[1]
+	s.port = a[2]
+	//	n.predecessor.id = a[0]
+	//	n.predecessor.address = a[1]
+	//	n.predecessor.port = a[2]
 	// create a new node
 	//s := new(DHTNode)
 	//b := strings.Split(req.Src, ":")
@@ -194,7 +197,7 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 	//s.address = a[1]
 	//s.port = b[1]
 	fmt.Println("added the predecessor with id: ", n.predecessor.id, "address: ", n.predecessor.address, "port: ", n.predecessor.port)
-	//n.predecessor = s
+	n.predecessor = s
 	fmt.Println("Ending JoinRing")
 	fmt.Println("---------------------------------------")
 	//inte än fixat
@@ -469,6 +472,7 @@ func TimeNow() int64 {
 	return time.Now().UnixNano()
 }
 
+// initializing DB
 func (n *DHTNode) initDB() {
 
 	db, err := bolt.Open(n.id+".db", 0600, nil)
@@ -478,7 +482,14 @@ func (n *DHTNode) initDB() {
 	defer db.Close()
 }
 
-//	used to lookup where to store data
+/*										*
+				AddData
+
+	Used to lookup where to store data
+	then contacts that node and asks it
+	to write the data
+
+*										*/
 func (n *DHTNode) AddData(key string, value string) {
 	fmt.Println("")
 	fmt.Println("--------------------------------------")
@@ -500,6 +511,16 @@ func (n *DHTNode) AddData(key string, value string) {
 
 }
 
+/*										*
+				writeData
+
+	Used to write data to the nodes
+	database.
+	It then calls the predecessor
+	and commands it to replicate the
+	input.
+
+*										*/
 func (n *DHTNode) writeData(msg *Msg) {
 	channel := make(chan Msg)
 	a := strings.Split(msg.Key, ":")
@@ -522,7 +543,7 @@ func (n *DHTNode) writeData(msg *Msg) {
 		log.Fatal(err)
 	}
 
-	m := makeMsg("replicateData", n.successor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
+	m := makeMsg("replicateData", n.predecessor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, nil)
 	//
 	// Send data to replication (predecessor)
@@ -530,7 +551,16 @@ func (n *DHTNode) writeData(msg *Msg) {
 
 }
 
-//reads the data
+/*										*
+				readData
+
+	Lookup where the req data is saved
+	and then contacts that node to ask
+	it to send back the req data.
+	When the node have sent its data
+	we return it as a string.
+
+*										*/
 func (n *DHTNode) readData(key string) string {
 	channel := make(chan Msg)
 	hashKey := sha1hash(key)
@@ -548,7 +578,14 @@ func (n *DHTNode) readData(key string) string {
 
 }
 
-// Returns data to the node req it
+/*										*
+				returnData
+
+	Retrives the data stored in key
+	and then
+	returns the data requested from
+	readData.
+*										*/
 func (n *DHTNode) returnData(msg *Msg) {
 	err := db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
@@ -566,17 +603,37 @@ func (n *DHTNode) returnData(msg *Msg) {
 
 }
 
-//searches where the deleted data is stored
+/*										*
+				deleteData
+
+	Searches where the data that is
+	going to be deleted is stored.
+	Once that is found we send a
+	removeData tho that node.
+*										*/
 func (n *DHTNode) deleteData() {
 
 }
 
-//Deletes the data from the node and
+/*										*
+				removeData
+
+	Removes the data of the key sent
+	from deleteData.
+	When it have been deleted it schoud
+	conntact the replicated data and
+	remove that key/value to
+*										*/
 func (n *DHTNode) removeData(msg *Msg) {
 
 }
 
-// replicate to predecessor
+/*										*
+				replicateData
+
+	Replicates a newley added key/value
+	from its successor.
+*										*/
 func (n *DHTNode) replicateData(msg *Msg) {
 	channel := make(chan Msg)
 	a := strings.Split(msg.Key, ":")
@@ -600,8 +657,11 @@ func (n *DHTNode) replicateData(msg *Msg) {
 	}
 }
 
-//should data be sent to successor
+/*										*
+				lookupData
 
+
+*										*/
 func (n *DHTNode) lookupData() {
 	//channel := make(chan Msg)
 
