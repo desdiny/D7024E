@@ -55,8 +55,9 @@ func main() {
 
 			//		case "changePredecessor":
 			//			go n.changePredecessor(input)
-		default:
-			fmt.Println(input, "inte penis")
+		case "fingers":
+			go n.FingerPrint()
+
 		}
 
 	}

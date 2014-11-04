@@ -139,6 +139,9 @@ func (n *DHTNode) parse(msg *Msg) {
 	case "join":
 		n.Join(msg)
 
+	case "changeSuccessor":
+		n.changeSuccessor(msg)
+
 	case "joinRing":
 		n.JoinRing(msg.Key)
 

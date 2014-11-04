@@ -55,7 +55,7 @@ type Fingers struct {
 
 func (node *DHTNode) autoFingers() {
 	channel := make(chan Msg)
-	i := rand.Intn(160) //vet inte ifall det behövs en random var i intn(???)
+	i := rand.Intn(3) //vet inte ifall det behövs en random var i intn(???)
 
 	//create autofingers message
 	m := makeMsg("lookupNetwork", node.Address(), node.finger[i].start, node.Address(), time.Now().UnixNano(), node.Address())
@@ -88,7 +88,8 @@ func MakeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*Fingers, 160) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
+		n.initFingerTable()
 		n.Transport = makeTransport(n, n.address, n.port)
 		go n.Transport.listen()
 
@@ -98,9 +99,11 @@ func MakeDHTNode(idcheck *string, address string, port string) *DHTNode {
 		n.port = port
 		n.successor = n
 		n.predecessor = n
-		n.finger = make([]*Fingers, 160) //change to use for 3 and 160
+		n.finger = make([]*Fingers, 3) //change to use for 3 and 160
+		n.initFingerTable()
 		n.Transport = makeTransport(n, n.address, n.port)
 		go n.Transport.listen()
+
 	}
 	return n
 
@@ -204,26 +207,30 @@ func (n *DHTNode) Join(msg *Msg) {
 	//channel := make(chan Msg)
 	// splits the incomming keys
 	a := strings.Split(msg.Key, ",")
+	k := strings.Split(msg.Src, ":")
 
 	fmt.Println("the joining has begun, calling to set predecessor on next node")
 	fmt.Println("")
-	joinidandaddress := a[0] + "," + a[1]
+	oldsuccessor := n.successor
+	joinidandaddress := a[0] + "," + a[1] + "," + k[1]
 	m := makeMsg("changePredecessor", n.successor.Address(), joinidandaddress, n.Address(), time.Now().UnixNano(), n.Address())
 	n.Transport.send(m, nil)
 	fmt.Println("Sending changePredecessor to successor")
 	fmt.Println("")
 	//creates a new node
-	s := new(DHTNode)
-	//s := new(OutsideNode)
-	s.id = a[0]
-	s.address = a[1]
+	//s := new(DHTNode)
 	v := strings.Split(msg.Origin, ":")
-	s.port = v[1]
-
-	fmt.Println("added the new node: ", " id: ", s.id, " address: ", s.address, " port: ", s.port)
+	//s.id = a[0]
+	//	s.address = a[1]
+	//s.port = v[1]
+	n.successor.id = a[0]
+	n.successor.address = a[1]
+	n.successor.port = v[1]
+	fmt.Println("added the new node: ", " id: ", n.successor.id, " address: ", n.successor.address, " port: ", n.successor.port)
 	fmt.Println("")
 	// adds the new node as the nodes succsessor
-	n.successor = s
+	//	n.successor = s
+	n.finger[0].node = n.successor
 
 	//adding both to one variable so we can send it in the key value
 	// have to concatinate when message is recived
@@ -234,6 +241,11 @@ func (n *DHTNode) Join(msg *Msg) {
 
 	// sends message
 	n.Transport.send(m, nil)
+
+	key := oldsuccessor.id + ":" + oldsuccessor.address + ":" + oldsuccessor.port
+	m = makeMsg("changeSuccessor", msg.Origin, key, n.Address(), TimeNow(), n.Address())
+	n.Transport.send(m, nil)
+
 	fmt.Println("sends respons to JoinRing to let it add with our cred")
 	fmt.Println("")
 	fmt.Println("Join operation complete")
@@ -246,14 +258,38 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 	a := strings.Split(msg.Key, ",")
 
 	//create a new node on this instance
-	s := new(DHTNode)
+	//s := new(DHTNode)
 	//s := new(OutsideNode)
-	s.id = a[0]
-	s.address = a[1]
+	//s.id = a[0]
+	//s.address = a[1]
+	//s.port = a[2]
+	n.predecessor.id = a[0]
+	n.predecessor.address = a[1]
+	n.predecessor.port = a[2]
 
 	// adds the node to n's predecessor
-	n.predecessor = s
+	//n.predecessor = s
 
+	//m := makeMsg("changeSuccessor", s.Address(), n.id, n.Address(), msg.Time, n.Address())
+
+	// sends message
+	//	n.Transport.send(m, nil)
+
+}
+
+func (n *DHTNode) changeSuccessor(msg *Msg) {
+	a := strings.Split(msg.Key, ":")
+	n.successor.id = msg.Key
+	n.successor.address = a[1]
+	n.successor.port = a[0]
+	//s := new(DHTNode)
+	//s.id = msg.Key
+	//a := strings.Split(msg.Key, ":")
+	//s.id = a[0]
+	//s.address = a[1]
+	//s.port = a[2]
+	//n.successor = s
+	n.finger[0].node = n.successor
 }
 
 //func (n *DHTNode) addToRing(newnode *DHTNode) {
@@ -512,12 +548,14 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 	}
 	//fmt.Println("INDEX", index)
 
+	fmt.Println("TEST1 LOOKUP!")
 	//stegar ner tills fingret inte pekar på sig själv
 
-	//tog bort de undre 2 raderna för att testa natten den 3 november
-	//for ; index > 0 && d.finger[index].node == d; index-- {
+	for ; index > 0 && d.finger[index].node == d; index-- {
 
-	//	}
+	}
+	fmt.Println(index)
+	fmt.Println("TEST 2 LOOKUP")
 	// Kollar så vi inte hamnar för långt
 	diff := big.Int{}
 	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
@@ -612,4 +650,17 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 func (d *DHTNode) Address() string {
 	return d.address + ":" + d.port
 
+}
+
+func (d *DHTNode) FingerPrint() {
+	fmt.Println("Här är dina fingrar")
+
+	for i := 0; i < 160; i++ {
+		fmt.Println("finger nr:", i, " ", d.finger[i].start)
+
+	}
+}
+
+func TimeNow() int64 {
+	return time.Now().UnixNano()
 }
