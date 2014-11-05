@@ -164,19 +164,19 @@ func (n *DHTNode) parse(msg *Msg) {
 		n.Ping()
 
 	case "writeData":
-		fmt.Println("Do Something")
+		n.writeData(msg)
 
 	case "returnData":
-		fmt.Println("Do Something")
+		n.returnData(msg)
 
 	case "removeData":
-		fmt.Println("Do Something")
+		n.removeData(msg)
 
 	case "removeReplication":
-		fmt.Println("Do Something")
+		n.removeReplication(msg)
 
 	case "replicateData":
-		fmt.Println("Do Something")
+		n.replicateData(msg)
 
 	}
 }

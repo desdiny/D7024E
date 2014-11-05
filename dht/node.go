@@ -161,28 +161,21 @@ func makeTransport(node *DHTNode, Address string, port string) *Transport {
 //node that wants to join ring
 func (n *DHTNode) JoinRing(networkaddr string) {
 	channel := make(chan Msg)
-	fmt.Println("---------------------------------------")
-	fmt.Println("")
 	fmt.Println("JoinRing in Progress")
-	fmt.Println("")
 	fmt.Println("calling node on address: ", networkaddr)
 	m := makeMsg("lookupNetwork", networkaddr, n.id, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
-	fmt.Println("")
 	fmt.Println("node has been called")
 
 	req := <-channel
-	fmt.Println("")
 	fmt.Println("receved a answer on JoinRing with KEY: ", req.Key)
 	joinidandaddress := n.id + "," + n.address + "," + n.port
 	m = makeMsg("join", req.Src, joinidandaddress, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
-	fmt.Println("")
 	fmt.Println("Sending message to join function....")
 
 	// waiting for answer
 	req = <-channel
-	fmt.Println("")
 	fmt.Println("recived ansver from Joinfunction")
 
 	// split req (id and address)
@@ -203,11 +196,9 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 	//s.id = a[0]
 	//s.address = a[1]
 	//s.port = b[1]
-	fmt.Println("")
 	fmt.Println("added the predecessor with id: ", n.predecessor.id, "address: ", n.predecessor.address, "port: ", n.predecessor.port)
 	n.predecessor = s
 	fmt.Println("Ending JoinRing")
-	fmt.Println("")
 	fmt.Println("---------------------------------------")
 	//inte än fixat
 	/*n.initFingerTable(newnode)
@@ -227,7 +218,6 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 func (n *DHTNode) Join(msg *Msg) {
 	fmt.Println("")
 	fmt.Println("-----------------------------------------")
-	fmt.Println("")
 	fmt.Println("Join operation initializing")
 	fmt.Println("")
 	//channel := make(chan Msg)
@@ -278,7 +268,7 @@ func (n *DHTNode) Join(msg *Msg) {
 	m = makeMsg("changeSuccessor", msg.Origin, key, n.Address(), TimeNow(), n.Address())
 	fmt.Println("Sending message to change Successor to: ", msg.Origin)
 	n.Transport.send(m, nil)
-	fmt.Println("")
+
 	fmt.Println("sends respons to JoinRing to let it add with our cred")
 	fmt.Println("")
 	fmt.Println("Join operation complete")
@@ -290,7 +280,6 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 	fmt.Println("")
 	fmt.Println("------------------------------------------")
 	fmt.Println("Starting changePredecessor")
-	fmt.Println("")
 	//split incomming key
 	a := strings.Split(msg.Key, ",")
 
@@ -306,13 +295,12 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 	// adds the node to n's predecessor
 	n.predecessor = s
 	fmt.Println("Have changed the predecessor to: ", " id: ", s.id, " address: ", s.address, " port: ", s.port)
-	fmt.Println("")
+
 	//m := makeMsg("changeSuccessor", s.Address(), n.id, n.Address(), msg.Time, n.Address())
 
 	// sends message
 	//	n.Transport.send(m, nil)
 	fmt.Println("Changing Predecessor completed")
-	fmt.Println("")
 	fmt.Println("------------------------------------------")
 	fmt.Println("")
 
@@ -321,9 +309,7 @@ func (n *DHTNode) changePredecessor(msg *Msg) {
 func (n *DHTNode) changeSuccessor(msg *Msg) {
 	fmt.Println("")
 	fmt.Println("------------------------------------------")
-	fmt.Println("")
 	fmt.Println("Starting changeSuccessor")
-	fmt.Println("")
 	a := strings.Split(msg.Key, ":")
 	//	n.successor.id = msg.Key
 	//n.successor.address = a[1]
@@ -336,10 +322,8 @@ func (n *DHTNode) changeSuccessor(msg *Msg) {
 	s.port = a[2]
 	n.successor = s
 	fmt.Println("Have changed the successor to: ", " id: ", s.id, " address: ", s.address, " port: ", s.port)
-	fmt.Println("")
 	n.finger[0].node = n.successor
 	fmt.Println("Changing Successor completed")
-	fmt.Println("")
 	fmt.Println("------------------------------------------")
 	fmt.Println("")
 }
@@ -380,13 +364,10 @@ func (d *DHTNode) tostring() (out string) {
 //node contacted over network
 func (d *DHTNode) lookupNetwork(msg *Msg) {
 	fmt.Println("-----------------------------------")
-	fmt.Println("")
 	fmt.Println("Starting lookupNetwork")
-	fmt.Println("")
+
 	fmt.Println("Check between vaiables, d.id:", d.id, " d.successor.id: ", d.successor.id, " msg.Key: ", msg.Key)
-	fmt.Println("")
 	fmt.Println("This is our message: msg.Key", msg.Key, "msg.Origin: ", msg.Origin)
-	fmt.Println("")
 	//if d is  responsible for id
 	if between([]byte(d.id), []byte(d.successor.id), []byte(msg.Key)) {
 		m := makeMsg("response", msg.Origin, d.id, d.Address(), msg.Time, d.Address())
@@ -412,18 +393,15 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 		return
 	}
 	//fmt.Println("INDEX", index)
-	fmt.Println("")
+
 	fmt.Println("TEST1 LOOKUP!")
-	fmt.Println("")
 	//stegar ner tills fingret inte pekar på sig själv
 
 	for ; index > 0 && d.finger[index].node == d; index-- {
 
 	}
 	fmt.Println(index)
-	fmt.Println("")
 	fmt.Println("TEST 2 LOOKUP")
-	fmt.Println("")
 	// Kollar så vi inte hamnar för långt
 	diff := big.Int{}
 	diff.Sub(dist, distance(d.id, d.finger[index].node.id, len(d.finger)))
@@ -433,9 +411,7 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 	}
 	//kollar så vi inte pekar på oss själva
 	if d.finger[index].node == d || diff.Sign() < 0 {
-		fmt.Println("")
 		fmt.Println("ERROR ERROR alles gebort auf the baut")
-		fmt.Println("")
 		// send message to the successor node to do a lookup
 		m := makeMsg("lookupNetwork", d.successor.Address(), msg.Key, msg.Origin, msg.Time, d.Address())
 		fmt.Println("Sending to lookup again 1")
@@ -467,33 +443,33 @@ func (d *DHTNode) Address() string {
 }
 
 func (d *DHTNode) FingerPrint() {
-	fmt.Println("")
 	fmt.Println("Här är dina fingrar")
-	fmt.Println("")
+
 	for i := 0; i < 160; i++ {
 		fmt.Println("finger nr:", i, " ", d.finger[i].start)
-		fmt.Println("")
+
 	}
 }
 func (d *DHTNode) IdPrint() {
-	fmt.Println("")
+
 	fmt.Println("Detta är ditt id:", d.id)
-	fmt.Println("")
+
 }
 
 func (d *DHTNode) PreID() {
-	fmt.Println("")
+
 	fmt.Println("Detta är din predecessor, id: ", d.predecessor.id, "address: ", d.predecessor.address, "port: ", d.predecessor.port)
-	fmt.Println("")
+
 }
 
 func (d *DHTNode) SucID() {
-	fmt.Println("")
+
 	fmt.Println("Detta är din successor, id: ", d.successor.id, "address: ", d.successor.address, "port: ", d.successor.port)
-	fmt.Println("")
+
 }
 
 func (n *DHTNode) Ping() {
+	fmt.Println("test")
 
 	channel := make(chan Msg)
 
@@ -507,55 +483,16 @@ func (n *DHTNode) Ping() {
 	select {
 	case req := <-channel:
 		fmt.Println("Successor is responding", req)
-		fmt.Println("")
-
 	case <-time.After(2 * time.Second):
-		fmt.Println("Successor not responding. Trying to connect to: ")
-		fmt.Println("")
-		/*										*
-					Foorloop inside Pong
-
-			Forloop to find the
-			next node online in our ring.
-			If it finds one we send a
-			changeSuccessor and
-			changePredecessor to the respected
-			nodes.
-
-		*										*/
-		m = makeMsg("Pong", n.finger[1].node.Address(), "ALLO", n.Address(), TimeNow(), n.Address())
-		n.Transport.send(m, channel)
-		fmt.Println("node with id: ", n.finger[1].node.id, " address: ", n.finger[1].node.Address())
-		fmt.Println("")
-		select {
-		case req := <-channel:
-			fmt.Println("have recived a alive ping from: ", req.Key, " with address: ", req.Src)
-			fmt.Println("")
-			ms := req.Key + ":" + req.Src
-			m := makeMsg("changeSuccessor", n.Address(), ms, n.Address(), TimeNow(), n.Address())
-			fmt.Println("")
-			n.Transport.send(m, nil)
-			pre := n.id + "," + n.address + "," + n.port
-			m = makeMsg("changePredecessor", req.Src, pre, n.Address(), TimeNow(), n.Address())
-			fmt.Println("")
-			n.Transport.send(m, nil)
-			return
-
-		case <-time.After(2 * time.Second):
-			fmt.Println("Succsessors successor (finger[1] isnt responding.. To bad)")
-			fmt.Println("Network is totaly broken")
-			fmt.Println("goodBye")
-			fmt.Println("")
-
-		}
+		fmt.Println("Successor is not responding")
 
 	}
 
 }
 func (n *DHTNode) Pong(msg *Msg) {
 	if msg.Key == "ALLO" {
-		fmt.Println("Har fått pong, skickar svar")
-		m := makeMsg("response", msg.Origin, n.id, n.Address(), msg.Time, n.Address())
+		fmt.Println("Har fått pong, skickar ping")
+		m := makeMsg("response", msg.Origin, "Ping", n.Address(), msg.Time, n.Address())
 		fmt.Println("Pong value", m)
 		n.Transport.send(m, nil)
 	} else {
@@ -570,7 +507,8 @@ func TimeNow() int64 {
 // initializing DB
 func (n *DHTNode) initDB() {
 
-	db, err := bolt.Open(n.id+".db", 0600, nil)
+	//db, err := bolt.Open(n.id+".db", 0600, nil)
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -585,7 +523,7 @@ func (n *DHTNode) initDB() {
 	to write the data
 
 *										*/
-func (n *DHTNode) AddData(key string, value string) {
+func (n *DHTNode) AddData(key string, value string) string {
 	fmt.Println("")
 	fmt.Println("--------------------------------------")
 	fmt.Println("Starting AddData with key: ", key, " and value: ", value)
@@ -602,7 +540,11 @@ func (n *DHTNode) AddData(key string, value string) {
 	fmt.Println("")
 	data := hashKey + ":" + value
 	m = makeMsg("writeData", req.Src, data, n.Address(), TimeNow(), n.Address())
-	n.Transport.send(m, nil)
+	n.Transport.send(m, channel)
+
+	req1 := <-channel
+
+	return req1.Key
 
 }
 
@@ -617,34 +559,84 @@ func (n *DHTNode) AddData(key string, value string) {
 
 *										*/
 func (n *DHTNode) writeData(msg *Msg) {
+	fmt.Println("Data is being added: %s", msg.Key)
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	fmt.Println("WriteData test 1: ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	//channel := make(chan Msg)
-	//a := strings.Split(msg.Key, ":")
+	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	fmt.Println("WriteData test 1 1/2: ")
+	db.Update(func(tx *bolt.Tx) error {
+
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
+			fmt.Println("WriteData test 1 2: ")
 			return err
+
+		}
+		v := bucket.Get([]byte(key))
+		if v != nil {
+			m := makeMsg("response", msg.Origin, "key is alredy used", msg.Origin, msg.Time, n.Address())
+			n.Transport.send(m, nil)
+		} else {
+
+			bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
+			if err != nil {
+				return err
+			}
+
+			err = bucket.Put([]byte(key), []byte(value))
+			if err != nil {
+				return err
+			}
+			m := makeMsg("response", msg.Origin, "Values are uploaded", msg.Origin, msg.Time, n.Address())
+			n.Transport.send(m, nil)
+			return nil
+
 		}
 
-		err = bucket.Put([]byte(key), []byte(value))
-		if err != nil {
-			return err
-		}
 		return nil
 	})
 
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("WriteData test 6: ")
 
 	m := makeMsg("replicateData", n.predecessor.Address(), msg.Key, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, nil)
+
+	return
+
 	//
 	// Send data to replication (predecessor)
 	//
 
 }
+
+/*func (n *DHTNode) ListData() {
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer db.Close()
+
+	db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(n.id))
+		bucket.ForEach(func(k, v []byte) error {
+			fmt.Fprintf(w, "key=%s, value=%s\n", k, v)
+			return nil
+		})
+		return nil
+	})
+}*/
 
 /*										*
 				readData
@@ -657,13 +649,16 @@ func (n *DHTNode) writeData(msg *Msg) {
 
 *										*/
 func (n *DHTNode) readData(key string) string {
+
+	fmt.Println("Start to read data with key: " + key)
+
 	channel := make(chan Msg)
 	hashKey := sha1hash(key)
 	m := makeMsg("lookupNetwork", n.Address(), hashKey, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 
 	req := <-channel
-
+	fmt.Println("Found key on node: ", req.Key, " on address: ", req.Src)
 	m = makeMsg("returnData", req.Src, hashKey, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, channel)
 
@@ -682,11 +677,16 @@ func (n *DHTNode) readData(key string) string {
 	readData.
 *										*/
 func (n *DHTNode) returnData(msg *Msg) {
-	err := db.View(func(tx *bolt.Tx) error {
+
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
-			m := makeMsg("response", msg.Src, "not_found", n.Address(), msg.Time, n.Address())
-			n.Transport.send(m, nil)
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
 		}
 
@@ -718,11 +718,9 @@ func (n *DHTNode) deleteData(key string) {
 	req := <-channel
 
 	m = makeMsg("removeData", req.Src, hashKey, n.Address(), TimeNow(), n.Address())
-	n.Transport.send(m, channel)
+	n.Transport.send(m, nil)
 
-	req = <-channel
-
-	return req.Key
+	return
 
 }
 
@@ -736,31 +734,45 @@ func (n *DHTNode) deleteData(key string) {
 	remove that key/value to
 *										*/
 func (n *DHTNode) removeData(msg *Msg) {
+	fmt.Println("Data is being removed: %s", msg.Key)
 
-	err := db.View(func(tx *bolt.Tx) error {
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
 		}
 		value := bucket.Get([]byte(msg.Key))
-
+		fmt.Println("test 1, value:")
 		if value != nil {
-			db.Update(func(tx *bolt.Tx) error {
-				bucket.Delete([]byte(key))
-				m := makeMsg("removeReplication", n.predecessor.Address(), msg.Key, msg.Origin, TimeNow(), msg.Src)
-				n.Transport.send(m, nil)
-				return err
-			})
+			bucket.Delete([]byte(msg.Key))
+			fmt.Println("test 2")
+
+			m := makeMsg("removeReplication", n.predecessor.Address(), msg.Key, msg.Origin, TimeNow(), msg.Src)
+			n.Transport.send(m, nil)
+			return err
+
 		} else {
-			return
+			return nil
 		}
-		return
+		return nil
 	})
 }
 
 func (n *DHTNode) removeReplication(msg *Msg) {
 
-	err := db.View(func(tx *bolt.Tx) error {
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
@@ -770,7 +782,7 @@ func (n *DHTNode) removeReplication(msg *Msg) {
 		if value != nil {
 
 			db.Update(func(tx *bolt.Tx) error {
-				bucket.Delete([]byte(key))
+				bucket.Delete([]byte(msg.Key))
 				return err
 			})
 
@@ -789,11 +801,18 @@ func (n *DHTNode) removeReplication(msg *Msg) {
 	from its successor.
 *										*/
 func (n *DHTNode) replicateData(msg *Msg) {
-	channel := make(chan Msg)
+
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	//channel := make(chan Msg)
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err
@@ -817,8 +836,14 @@ func (n *DHTNode) replicateData(msg *Msg) {
 
 *										*/
 func (n *DHTNode) lookupData(msg *Msg) {
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("MyBucket"))
+		b := tx.Bucket([]byte(n.id))
 		b.ForEach(func(k, v []byte) error {
 			if between([]byte(n.successor.id), []byte(n.finger[1].node.id), k) {
 				key := string(k)
@@ -844,10 +869,17 @@ func (n *DHTNode) lookupData(msg *Msg) {
 //
 
 func (n *DHTNode) writeReplicationData(msg *Msg) {
+
+	db, err := bolt.Open("node-"+n.id+".db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
 	a := strings.Split(msg.Key, ":")
 	key := a[0]
 	value := a[1]
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists([]byte(n.id))
 		if err != nil {
 			return err

@@ -45,23 +45,23 @@ func main() {
 		http.HandleFunc("/chord/", dht.Chord)
 
 		http.HandleFunc("/chord/post/", func(w http.ResponseWriter, r *http.Request) {
-			dht.Post(w, r)
+			dht.Post(w, r, n)
 		})
 
 		http.HandleFunc("/chord/get/", func(w http.ResponseWriter, r *http.Request) {
-			dht.Get(w, r)
+			dht.Get(w, r, n)
 		})
 
 		http.HandleFunc("/chord/put/", func(w http.ResponseWriter, r *http.Request) {
-			dht.Put(w, r)
+			dht.Put(w, r, n)
 		})
 
 		http.HandleFunc("/chord/delete/", func(w http.ResponseWriter, r *http.Request) {
-			dht.Del(w, r)
+			dht.Del(w, r, n)
 		})
 
 		http.HandleFunc("/chord/list/", func(w http.ResponseWriter, r *http.Request) {
-			dht.List(w, r)
+			dht.List(w, r, n)
 		})
 
 		http.ListenAndServe(":"+port, nil)
