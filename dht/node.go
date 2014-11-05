@@ -469,7 +469,6 @@ func (d *DHTNode) SucID() {
 }
 
 func (n *DHTNode) Ping() {
-	fmt.Println("test")
 
 	channel := make(chan Msg)
 
@@ -483,8 +482,47 @@ func (n *DHTNode) Ping() {
 	select {
 	case req := <-channel:
 		fmt.Println("Successor is responding", req)
+		fmt.Println("")
+
 	case <-time.After(2 * time.Second):
-		fmt.Println("Successor is not responding")
+		fmt.Println("Successor not responding. Trying to connect to: ")
+		fmt.Println("")
+		/*										*
+					Foorloop inside Pong
+
+			Forloop to find the
+			next node online in our ring.
+			If it finds one we send a
+			changeSuccessor and
+			changePredecessor to the respected
+			nodes.
+
+		*										*/
+		m = makeMsg("Pong", n.finger[1].node.Address(), "ALLO", n.Address(), TimeNow(), n.Address())
+		n.Transport.send(m, channel)
+		fmt.Println("node with id: ", n.finger[1].node.id, " address: ", n.finger[1].node.Address())
+		fmt.Println("")
+		select {
+		case req := <-channel:
+			fmt.Println("have recived a alive ping from: ", req.Key, " with address: ", req.Src)
+			fmt.Println("")
+			ms := req.Key + ":" + req.Src
+			m := makeMsg("changeSuccessor", n.Address(), ms, n.Address(), TimeNow(), n.Address())
+			fmt.Println("")
+			n.Transport.send(m, nil)
+			pre := n.id + "," + n.address + "," + n.port
+			m = makeMsg("changePredecessor", req.Src, pre, n.Address(), TimeNow(), n.Address())
+			fmt.Println("")
+			n.Transport.send(m, nil)
+			return
+
+		case <-time.After(2 * time.Second):
+			fmt.Println("Succsessors successor (finger[1] isnt responding.. To bad)")
+			fmt.Println("Network is totaly broken")
+			fmt.Println("goodBye")
+			fmt.Println("")
+
+		}
 
 	}
 
