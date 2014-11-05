@@ -76,7 +76,7 @@ func main() {
 			select {
 			case <-c:
 				n.AutoFingers()
-				node.autoFingers()
+				//node.autoFingers()
 			}
 		}
 	}()
