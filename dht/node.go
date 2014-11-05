@@ -483,16 +483,51 @@ func (n *DHTNode) Ping() {
 	select {
 	case req := <-channel:
 		fmt.Println("Successor is responding", req)
+
 	case <-time.After(2 * time.Second):
-		fmt.Println("Successor is not responding")
+		fmt.Println("Successor not responding. Trying to connect to: ")
+
+		/*										*
+					Foorloop inside Pong
+
+			Forloop to find the
+			next node online in our ring.
+			If it finds one we send a
+			changeSuccessor and
+			changePredecessor to the respected
+			nodes.
+
+		*										*/
+		m = makeMsg("Pong", n.finger[1].node.Address(), "ALLO", n.Address(), TimeNow(), n.Address())
+		n.Transport.send(m, channel)
+		fmt.Println("node with id: ", n.finger[1].node.id, " address: ", n.finger[1].node.Address())
+
+		select {
+		case req := <-channel:
+			fmt.Println("have recived a alive ping from: ", req.Key, " with address: ", req.Src)
+			fmt.Println("")
+			ms := req.Key + ":" + req.Src
+			m := makeMsg("changeSuccessor", n.Address(), ms, n.Address(), TimeNow(), n.Address())
+			fmt.Println("")
+			n.Transport.send(m, nil)
+			pre := n.id + "," + n.address + "," + n.port
+			m = makeMsg("changePredecessor", req.Src, pre, n.Address(), TimeNow(), n.Address())
+			fmt.Println("")
+			n.Transport.send(m, nil)
+			return
+
+		case <-time.After(2 * time.Second):
+			fmt.Println("Succsessors successor (finger[1] isnt responding.. To bad)")
+
+		}
 
 	}
 
 }
 func (n *DHTNode) Pong(msg *Msg) {
 	if msg.Key == "ALLO" {
-		fmt.Println("Har fått pong, skickar ping")
-		m := makeMsg("response", msg.Origin, "Ping", n.Address(), msg.Time, n.Address())
+		fmt.Println("Har fått pong, skickar svar")
+		m := makeMsg("response", msg.Origin, n.id, n.Address(), msg.Time, n.Address())
 		fmt.Println("Pong value", m)
 		n.Transport.send(m, nil)
 	} else {
@@ -636,6 +671,8 @@ func (n *DHTNode) returnData(msg *Msg) {
 	err = db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(n.id))
 		if bucket == nil {
+			m := makeMsg("response", msg.Src, "not_found", n.Address(), msg.Time, n.Address())
+			n.Transport.send(m, nil)
 			return fmt.Errorf("Bucket %q not found!", []byte(n.id))
 		}
 
@@ -705,9 +742,9 @@ func (n *DHTNode) removeData(msg *Msg) {
 				return err
 			})
 		} else {
-			return nil
+			return
 		}
-		return nil
+		return
 	})
 }
 
