@@ -330,30 +330,6 @@ func (n *DHTNode) changeSuccessor(msg *Msg) {
 	fmt.Println("")
 }
 
-func (n *DHTNode) printRing() {
-
-	nextNode := n.successor
-	fmt.Println("id: ", n.id, "fingers: ", n.finger)
-	for nextNode != n {
-		fmt.Printf("id: %s fingers: ", nextNode.id)
-		for i := 0; i < len(nextNode.finger); i++ {
-			fmt.Printf("%s ", nextNode.finger[i].node.id)
-
-		}
-		fmt.Println()
-
-		//fmt.Println(nextNode.id)
-		nextNode = nextNode.successor
-
-	}
-}
-
-func (d *DHTNode) tostring() (out string) {
-	out = "DHTNode{id: " + d.id + ", address: " + d.address + ", port: " + d.port + "}"
-
-	return
-}
-
 //////////////////////////////////////////////////////////
 //				func for lookupNetwork					//
 //														//
