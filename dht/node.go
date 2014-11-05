@@ -68,9 +68,22 @@ func (node *DHTNode) AutoFingers() {
 	a := strings.Split(req.Src, ":")
 	if req.Src != node.finger[i].node.Address() && req.Key != node.finger[i].node.id {
 		fmt.Println("Autouppdaterar finger: ", i)
-		node.finger[i].node.id = req.Key
-		node.finger[i].node.address = a[0]
-		node.finger[i].node.port = a[1]
+
+		//inlaggt nu!
+		tempfinger := new(Fingers)
+		tempfinger.start = node.finger[i].start
+		n := new(DHTNode)
+		n.id = req.Key
+		n.address = a[0]
+		n.port = a[1]
+
+		tempfinger.node = n
+		node.finger[i] = tempfinger
+		//till hit
+
+		//node.finger[i].node.id = req.Key
+		//node.finger[i].node.address = a[0]
+		//node.finger[i].node.port = a[1]
 	}
 
 	//finger := node.lookupNetwork(node.finger[i].node.id)
@@ -125,6 +138,10 @@ func (n *DHTNode) initFingerTable() {
 		}
 		tempfinger := new(Fingers)
 		tempfinger.start = fingerID
+		node := new(DHTNode)
+		node.id = n.id
+		node.address = n.address
+		node.port = n.port
 		tempfinger.node = n
 		n.finger[i-1] = tempfinger
 	}
@@ -358,7 +375,9 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 		//return d
 	}
 	//otherwise use fingers
+	// dist = distance to jump
 	dist := distance(d.id, msg.Key, len(d.finger))
+	// sets index to dustance -1
 	index := dist.BitLen() - 1
 	if index < 0 {
 		m := makeMsg("response", msg.Origin, d.id, d.Address(), msg.Time, d.Address())
@@ -373,12 +392,12 @@ func (d *DHTNode) lookupNetwork(msg *Msg) {
 	//fmt.Println("INDEX", index)
 
 	fmt.Println("TEST1 LOOKUP!")
-	//stegar ner tills fingret inte pekar på sig själv
 
+	//stegar ner tills fingret inte pekar på sig själv
 	for ; index > 0 && d.finger[index].node == d; index-- {
 
 	}
-	fmt.Println(index)
+	fmt.Println("THIS IS OUR INDEX: ", index)
 	fmt.Println("TEST 2 LOOKUP")
 	// Kollar så vi inte hamnar för långt
 	diff := big.Int{}
@@ -424,7 +443,7 @@ func (d *DHTNode) FingerPrint() {
 	fmt.Println("Här är dina fingrar")
 
 	for i := 0; i < 160; i++ {
-		fmt.Println("finger nr:", i, " ", d.finger[i].start)
+		fmt.Println("finger nr:", i, " ", d.finger[i].node.id)
 
 	}
 }
