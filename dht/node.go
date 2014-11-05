@@ -198,7 +198,7 @@ func (n *DHTNode) JoinRing(networkaddr string) {
 	//s.port = b[1]
 	fmt.Println("added the predecessor with id: ", n.predecessor.id, "address: ", n.predecessor.address, "port: ", n.predecessor.port)
 	n.predecessor = s
-	m = makeMsg("lookupData", n.predecessor, n.id, n.Address(), TimeNow(), n.Address())
+	m = makeMsg("lookupData", n.predecessor.Address(), n.id, n.Address(), TimeNow(), n.Address())
 	n.Transport.send(m, nil)
 	fmt.Println("Ending JoinRing")
 	fmt.Println("---------------------------------------")
