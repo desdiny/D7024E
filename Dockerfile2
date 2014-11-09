@@ -1,0 +1,32 @@
+################################################
+# Dockerfile to build golang/dht container images
+# Based on Ubuntu
+################################################
+
+# Set the base image to Ubuntu
+FROM ubuntu 14.04
+
+# File Author / Maintainer
+MAINTAINER Michael Trolle
+
+RUN apt-get update
+
+
+############## BEGIN INSTALLATION ##############
+
+wget https://storage.googleapis.com/golang/go1.3.3.linux-amd64.tar.gz
+
+tar -xf go1.3.3.linux-amd64.tar.gz
+
+mv go /opt/
+
+mkdir /opt/gopkg
+export GOPATH="/opt/gopkg" 
+export GOROOT="/opt/go"
+
+echo export GOPATH=/opt/gopkg >> ~/.bashrc
+echo export GOROOT=/opt/go >> ~/.bashrc
+echo export PATH=$PATH:$GOROOT/bin:$GOPATH/bin >> ~/.bashrc
+
+export PATH=$PATH:$GOPATH/bin:$GOROOT/bin 
+
