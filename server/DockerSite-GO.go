@@ -51,7 +51,7 @@ func add(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("Post_id")
 	port := r.FormValue("Post_port")
 
-	cmdStr := "sudo docker run -d -e ID=" + id + " -e PORT=" + port + " -p " + port + ":" + port + " -p " + port + ":" + port + "/udp testarchord:try1"
+	cmdStr := "sudo docker run -d -e ID=" + id + " -e PORT=" + port + " -p " + port + ":" + port + " -p " + port + ":" + port + "/udp master:ENV"
 
 	fmt.Println(cmdStr)
 
