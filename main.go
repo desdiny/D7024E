@@ -36,8 +36,11 @@ func main() {
 	id := strings.TrimSpace(Id)
 	ip := strings.TrimSpace(Ip)
 	port := strings.TrimSpace(Port)
+	id_static := 1
+	ip_static := localhost
+	port_static := 1000
 
-	n := dht.MakeDHTNode(&id, ip, port)
+	n := dht.MakeDHTNode(&id_static, ip_static, port_static)
 	//n.JoinRing("localhost:1112")
 	fmt.Println("penis1")
 	go func() {
@@ -95,7 +98,7 @@ func main() {
 		//			go n.Join(input)
 
 		case "joinRing":
-			go n.JoinRing("localhost:1112")
+			go n.JoinRing("localhost:1000")
 
 			//		case "changePredecessor":
 			//			go n.changePredecessor(input)
