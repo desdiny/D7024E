@@ -12,34 +12,35 @@ import (
 	"time"
 )
 
-func main() {
+func main(id string, port, string) {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter id: ")
-	Id, _ := reader.ReadString('\n')
+	//fmt.Print("Enter id: ")
+	//	Id, _ := reader.ReadString('\n')
 	//Id := ""
 	//fmt.Println(text)
 
-	fmt.Println("Enter Ip: ")
+	//fmt.Println("Enter Ip: ")
 	//Ip, _ := reader.ReadString('\n')
-	Ip := "localhost"
-	fmt.Scanln(Ip)
+	//Ip := "localhost"
+	//fmt.Scanln(Ip)
 
-	fmt.Println("Enter port: ")
-	Port, _ := reader.ReadString('\n')
-	fmt.Scanln(Port)
+	//fmt.Println("Enter port: ")
+	//Port, _ := reader.ReadString('\n')
+	//fmt.Scanln(Port)
 
 	//id0 := "00"
-	fmt.Println(Id)
-	fmt.Println(Ip)
-	fmt.Println(Port)
+	//fmt.Println(Id)
+	//fmt.Println(Ip)
+	//fmt.Println(Port)
 
-	id := strings.TrimSpace(Id)
-	ip := strings.TrimSpace(Ip)
-	port := strings.TrimSpace(Port)
+	//id := strings.TrimSpace(Id)
+	//ip := strings.TrimSpace(Ip)
+	//port := strings.TrimSpace(Port)
+	ip := "localhost"
 
 	n := dht.MakeDHTNode(&id, ip, port)
-	//n.JoinRing("localhost:1112")
-	fmt.Println("penis1")
+	go n.JoinRing("localhost:1111")
+
 	go func() {
 
 		http.HandleFunc("/chord/", dht.Chord)
@@ -84,11 +85,9 @@ func main() {
 	for {
 		fmt.Println("Enter command: ")
 		Input, _ := reader.ReadString('\n')
-		fmt.Println("penis2")
+
 		fmt.Scanln(Input)
-		fmt.Println("penis3")
 		input := strings.TrimSpace(Input)
-		fmt.Println("penis4")
 
 		switch input {
 		//		case "join":
@@ -99,8 +98,6 @@ func main() {
 
 			//		case "changePredecessor":
 			//			go n.changePredecessor(input)
-		case "fingers":
-			go n.FingerPrint()
 
 		case "id":
 			go n.IdPrint()
