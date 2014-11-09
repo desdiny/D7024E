@@ -14,28 +14,28 @@ import (
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Print("Enter id: ")
-	Id, _ := reader.ReadString('\n')
+	//fmt.Print("Enter id: ")
+	//Id, _ := reader.ReadString('\n')
 	//Id := ""
 	//fmt.Println(text)
 
-	fmt.Println("Enter Ip: ")
+	//fmt.Println("Enter Ip: ")
 	//Ip, _ := reader.ReadString('\n')
-	Ip := "localhost"
-	fmt.Scanln(Ip)
+	//Ip := "localhost"
+	//fmt.Scanln(Ip)
 
-	fmt.Println("Enter port: ")
-	Port, _ := reader.ReadString('\n')
-	fmt.Scanln(Port)
+	//fmt.Println("Enter port: ")
+	//Port, _ := reader.ReadString('\n')
+	//fmt.Scanln(Port)
 
 	//id0 := "00"
-	fmt.Println(Id)
-	fmt.Println(Ip)
-	fmt.Println(Port)
+	//fmt.Println(Id)
+	//fmt.Println(Ip)
+	//fmt.Println(Port)
 
-	id := strings.TrimSpace(Id)
-	ip := strings.TrimSpace(Ip)
-	port := strings.TrimSpace(Port)
+	//id := strings.TrimSpace(Id)
+	//ip := strings.TrimSpace(Ip)
+	//port := strings.TrimSpace(Port)
 	id_static := 1
 	ip_static := localhost
 	port_static := 1000
