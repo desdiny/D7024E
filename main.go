@@ -5,6 +5,7 @@ import "D7024E/dht"
 //import "D7024E/dht"
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,8 +13,13 @@ import (
 	"time"
 )
 
-func main(id string, port, string) {
+func main() {
+	flag.Parse()
 	reader := bufio.NewReader(os.Stdin)
+
+	//id := flag.String(name, value, usage)
+	id := flag.Arg(0)
+	port := flag.Arg(1)
 	//fmt.Print("Enter id: ")
 	//	Id, _ := reader.ReadString('\n')
 	//Id := ""
@@ -36,6 +42,8 @@ func main(id string, port, string) {
 	//id := strings.TrimSpace(Id)
 	//ip := strings.TrimSpace(Ip)
 	//port := strings.TrimSpace(Port)
+	fmt.Println("Detta är ditt id:", id)
+	fmt.Println("Detta är din port: ", port)
 	ip := "localhost"
 
 	n := dht.MakeDHTNode(&id, ip, port)
