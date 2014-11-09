@@ -37,10 +37,11 @@ func main() {
 	//ip := strings.TrimSpace(Ip)
 	//port := strings.TrimSpace(Port)
 	//id_static := 1
+	id_static := "1"
 	ip_static := "localhost"
 	port_static := "1111"
 
-	n := dht.MakeDHTNode(nil, ip_static, port_static)
+	n := dht.MakeDHTNode(&id_static, ip_static, port_static)
 	//n.JoinRing("localhost:1112")
 	go func() {
 
