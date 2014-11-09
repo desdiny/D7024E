@@ -36,13 +36,12 @@ func main() {
 	//id := strings.TrimSpace(Id)
 	//ip := strings.TrimSpace(Ip)
 	//port := strings.TrimSpace(Port)
-	id_static := 1
+	//id_static := 1
 	ip_static := localhost
 	port_static := 1000
 
-	n := dht.MakeDHTNode(&id_static, ip_static, port_static)
+	n := dht.MakeDHTNode(nil, ip_static, port_static)
 	//n.JoinRing("localhost:1112")
-	fmt.Println("penis1")
 	go func() {
 
 		http.HandleFunc("/chord/", dht.Chord)
@@ -87,11 +86,8 @@ func main() {
 	for {
 		fmt.Println("Enter command: ")
 		Input, _ := reader.ReadString('\n')
-		fmt.Println("penis2")
 		fmt.Scanln(Input)
-		fmt.Println("penis3")
 		input := strings.TrimSpace(Input)
-		fmt.Println("penis4")
 
 		switch input {
 		//		case "join":
