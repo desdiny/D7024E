@@ -37,8 +37,8 @@ func main() {
 	//ip := strings.TrimSpace(Ip)
 	//port := strings.TrimSpace(Port)
 	//id_static := 1
-	ip_static := localhost
-	port_static := 1000
+	ip_static := "localhost"
+	port_static := "1111"
 
 	n := dht.MakeDHTNode(nil, ip_static, port_static)
 	//n.JoinRing("localhost:1112")
@@ -66,7 +66,7 @@ func main() {
 			dht.List(w, r, n)
 		})
 
-		http.ListenAndServe(":"+port, nil)
+		http.ListenAndServe(":"+port_static, nil)
 
 		fmt.Println("The page is rolling")
 
