@@ -47,7 +47,6 @@ func main() {
 	ip := "localhost"
 
 	n := dht.MakeDHTNode(&id, ip, port)
-	go n.JoinRing("localhost:1111")
 
 	go func() {
 
@@ -78,6 +77,7 @@ func main() {
 		fmt.Println("The page is rolling")
 
 	}()
+	go n.JoinRing("localhost:1111")
 
 	go func() {
 		c := time.Tick(3 * time.Second)
